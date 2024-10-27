@@ -1,0 +1,9 @@
+database:
+  dsn: <set it via DATABASE_DSN environment variable>
+
+event:
+  topic: events
+
+kafka:
+  bootstrap:
+    servers: localhost:9092
