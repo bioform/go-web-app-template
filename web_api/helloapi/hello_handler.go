@@ -11,6 +11,7 @@ import (
 
 	"github.com/bioform/go-web-app-template/pkg/database"
 	"github.com/bioform/go-web-app-template/pkg/server/rest"
+	"github.com/bioform/go-web-app-template/pkg/server/session"
 	"gorm.io/gorm"
 )
 
@@ -29,7 +30,7 @@ type helloHandler struct {
 
 func newHelloHandler(ctx context.Context) *helloHandler {
 	return &helloHandler{
-		db: database.Db(ctx),
+		db: database.Get(ctx),
 	}
 }
 
@@ -38,7 +39,14 @@ func (h *helloHandler) handle(w http.ResponseWriter, r *http.Request) error {
 	buf := bytes.NewBufferString("")
 
 	host, _ := os.Hostname()
-	fmt.Fprintf(buf, "Hello, world!\n")
+	user := session.GetUser(r.Context())
+
+	if user == nil {
+		fmt.Fprintf(buf, "Hello,world!\n")
+	} else {
+		fmt.Fprintf(buf, "Hello, %s!\n", user.Name)
+	}
+
 	fmt.Fprintf(buf, "Version: 1.0.0\n")
 	fmt.Fprintf(buf, "Hostname: %s\n", host)
 	fmt.Fprintf(buf, "Database: %s\n", h.db.Name())

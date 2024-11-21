@@ -18,7 +18,7 @@ var (
 	MIGRATOR gorm.Migrator
 )
 
-func Db(ctx context.Context) *gorm.DB {
+func Get(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
 }
 

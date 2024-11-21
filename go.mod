@@ -32,6 +32,8 @@ require (
 )
 
 require (
+	github.com/alexedwards/scs/gormstore v0.0.0-20240316134038-7e11d57e8885
+	github.com/alexedwards/scs/v2 v2.8.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/danielgtaylor/huma/v2 v2.26.0
 	github.com/golang-jwt/jwt/v4 v4.5.1

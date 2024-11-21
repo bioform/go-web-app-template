@@ -28,7 +28,7 @@ func upAddSomeColumn(ctx context.Context, tx *sql.Tx) error {
 		return err
 	}
 
-	db := database.Db(ctx)
+	db := database.Get(ctx)
 
 	hashedPassword, err := crypt.HashPassword("password")
 	if err != nil {

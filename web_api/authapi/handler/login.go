@@ -5,6 +5,7 @@ import (
 
 	"github.com/bioform/go-web-app-template/internal/jwt"
 	"github.com/bioform/go-web-app-template/internal/user/action"
+	"github.com/bioform/go-web-app-template/pkg/server/session"
 	"github.com/danielgtaylor/huma/v2"
 )
 
@@ -31,6 +32,8 @@ func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) 
 	if err != nil {
 		return nil, err
 	}
+
+	session.Manager.Put(ctx, session.UserIdKey, int64(user.ID))
 
 	result := &LoginOutput{}
 	result.Body.Token = token

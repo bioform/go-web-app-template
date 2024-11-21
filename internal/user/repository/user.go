@@ -16,7 +16,7 @@ import (
 
 type UserRepository interface {
 	Create(user *model.User) (uint, error)
-	FindByID(id int) (*model.User, error)
+	FindByID(id uint) (*model.User, error)
 	FindByEmailAndPassword(email, password string) (*model.User, error)
 }
 
@@ -28,7 +28,7 @@ type userRepositoryImpl struct {
 
 func NewUserRepository(ctx context.Context) *userRepositoryImpl {
 	return &userRepositoryImpl{
-		db:  database.Db(ctx),
+		db:  database.Get(ctx),
 		ctx: ctx,
 	}
 }
@@ -57,7 +57,7 @@ func (r *userRepositoryImpl) Create(user *model.User) (uint, error) {
 	return user.ID, nil
 }
 
-func (r *userRepositoryImpl) FindByID(id int) (*model.User, error) {
+func (r *userRepositoryImpl) FindByID(id uint) (*model.User, error) {
 	// Logic to retrieve a user by ID from the database
 	user := &model.User{}
 	if err := r.db.First(user, id).Error; err != nil {

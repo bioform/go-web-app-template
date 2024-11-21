@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/bioform/go-web-app-template/pkg/server/middleware"
+	"github.com/bioform/go-web-app-template/pkg/server/session"
 	"github.com/bioform/go-web-app-template/web_api/api"
 	"github.com/bioform/go-web-app-template/web_api/authapi"
 	"github.com/bioform/go-web-app-template/web_api/healthapi"
@@ -25,8 +26,10 @@ func RegisterRoutes() http.Handler {
 
 	var handler http.Handler = mux
 
-	handler = middleware.Error(handler)
+	handler = middleware.UserSession(handler)
+	handler = session.Manager.LoadAndSave(handler)
 	handler = middleware.Tracing(handler)
+	handler = middleware.Error(handler)
 
 	return handler
 }
