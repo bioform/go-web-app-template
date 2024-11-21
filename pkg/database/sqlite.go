@@ -17,7 +17,7 @@ func initSqliteDB(dsn string) (*gorm.DB, error) {
 	}
 
 	slog.Info("Connecting to database", slog.String("dsn", dsn))
-	return gorm.Open(sqlite.Open(sqliteDbPath), &gorm.Config{})
+	return gorm.Open(sqlite.Open(sqliteDbPath), &gorm.Config{TranslateError: true})
 }
 
 func findFile(path string) (string, error) {

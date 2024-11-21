@@ -21,5 +21,8 @@ func (s *RegisterUser) Call(name, email, password string) error {
 		Email:    email,
 		Password: password,
 	}
-	return s.repo.Save(newUser)
+
+	_, err := s.repo.Create(&newUser)
+
+	return err
 }

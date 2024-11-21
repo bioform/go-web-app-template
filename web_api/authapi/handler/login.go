@@ -2,41 +2,38 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
-	"log"
-	"net/http"
 
-	"github.com/bioform/go-web-app-template/internal/user/repository"
-	"github.com/bioform/go-web-app-template/pkg/server/rest"
+	"github.com/bioform/go-web-app-template/internal/jwt"
+	"github.com/bioform/go-web-app-template/internal/user/action"
+	"github.com/danielgtaylor/huma/v2"
 )
 
-func LoginHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		rest.ServeError(newHelloHandler(r.Context()).Handle).ServeHTTP(w, r) // pass the "app" context copy to the handler
+type LoginInput struct {
+	Body struct {
+		Email    string `json:"email" maxLength:"255" example:"username@example.com"`
+		Password string `json:"password" maxLength:"255" example:"complex_password"`
 	}
 }
 
-type loginHandler struct {
-	repo repository.UserRepository
-}
-
-func newHelloHandler(ctx context.Context) *loginHandler {
-	return &loginHandler{
-		repo: repository.NewUserRepository(ctx),
+type LoginOutput struct {
+	Body struct {
+		Token string
 	}
 }
 
-// hello responds to the request with a plain-text "Hello, world" message.
-func (h *loginHandler) Handle(w http.ResponseWriter, r *http.Request) error {
-	resp := make(map[string]string)
-	resp["message"] = "Success Login"
-
-	jsonResp, err := json.Marshal(resp)
+func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) {
+	user, err := action.AuthenticateUser(ctx).Call(input.Body.Email, input.Body.Password)
 	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
+		return nil, huma.Error404NotFound("User not found")
 	}
 
-	_, _ = w.Write(jsonResp)
+	token, err := jwt.UserToken(user)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	result := &LoginOutput{}
+	result.Body.Token = token
+
+	return result, nil
 }

@@ -15,7 +15,7 @@ import (
 )
 
 type UserRepository interface {
-	Save(user model.User) error
+	Create(user *model.User) (uint, error)
 	FindByID(id int) (*model.User, error)
 	FindByEmailAndPassword(email, password string) (*model.User, error)
 }
@@ -26,26 +26,35 @@ type userRepositoryImpl struct {
 	ctx context.Context
 }
 
-func NewUserRepository(ctx context.Context) UserRepository {
+func NewUserRepository(ctx context.Context) *userRepositoryImpl {
 	return &userRepositoryImpl{
 		db:  database.Db(ctx),
 		ctx: ctx,
 	}
 }
 
-func (r *userRepositoryImpl) Save(user model.User) error {
+func (r *userRepositoryImpl) Create(user *model.User) (uint, error) {
 
 	if len(user.Password) > 0 {
 		// Password was updated, hash it
 		hashedPassword, err := crypt.HashPassword(user.Password)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		user.PasswordHash = hashedPassword
 		user.Password = "" // Clear the plain password after hashing
 	}
 
-	return r.db.Create(&user).Error
+	db := r.db
+
+	err := db.Create(user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return 0, &model.EmailDuplicateError{Email: user.Email}
+		}
+		return 0, err
+	}
+	return user.ID, nil
 }
 
 func (r *userRepositoryImpl) FindByID(id int) (*model.User, error) {

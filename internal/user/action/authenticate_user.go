@@ -1,21 +1,28 @@
 package action
 
 import (
+	"context"
+
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/internal/user/repository"
 )
 
-type AuthenticateUser struct {
+type AuthenticateUserAction struct {
+	ctx  context.Context
 	repo repository.UserRepository
 }
 
 // NewUserService creates a new instance of UserService
-func NewAuthenticateUser(repo repository.UserRepository) *AuthenticateUser {
-	return &AuthenticateUser{repo: repo}
+func AuthenticateUser(ctx context.Context) *AuthenticateUserAction {
+	repo := repository.NewUserRepository(ctx)
+	return &AuthenticateUserAction{
+		ctx:  ctx,
+		repo: repo,
+	}
 }
 
 // AuthenticateUser authenticates a user by email and password.
-func (s *AuthenticateUser) Call(email, password string) (*model.User, error) {
+func (s *AuthenticateUserAction) Call(email, password string) (*model.User, error) {
 
 	// Find the user by email
 	user, err := s.repo.FindByEmailAndPassword(email, password)
