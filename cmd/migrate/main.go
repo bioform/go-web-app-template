@@ -34,7 +34,7 @@ func main() {
 	ctx := context.Background()
 	command := args[0]
 
-	arguments := []string{}
+	arguments := []string{"-dir", *dir}
 	if len(args) > 1 {
 		arguments = append(arguments, args[1:]...)
 	}
