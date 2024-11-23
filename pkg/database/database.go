@@ -13,12 +13,12 @@ import (
 var (
 	Dsn string
 
-	db       *gorm.DB
-	SQL_DB   *sql.DB
-	MIGRATOR gorm.Migrator
+	db           *gorm.DB // should be retrieved via GetDefault() only
+	DefaultSqlDB *sql.DB
+	MIGRATOR     gorm.Migrator
 )
 
-func Get(ctx context.Context) *gorm.DB {
+func GetDefault(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
 }
 
@@ -33,14 +33,22 @@ func init() {
 		log.Panicf("cannot open db(%s): %v", Dsn, err)
 	}
 
-	SQL_DB, _ = db.DB()
+	DefaultSqlDB, _ = db.DB()
 	MIGRATOR = db.Migrator()
 }
 
-func Close() {
-	if err := SQL_DB.Close(); err != nil {
+func CloseDefault() {
+	if err := DefaultSqlDB.Close(); err != nil {
 		slog.Error("Error closing DB connection", slog.String("db", Dsn), slog.Any("error", err))
 	} else {
 		slog.Info("DB connection gracefully closed", slog.String("db", Dsn))
+	}
+}
+
+func Close(db *sql.DB) {
+	if err := db.Close(); err != nil {
+		slog.Error("Error closing DB connection", slog.Any("error", err))
+	} else {
+		slog.Info("DB connection gracefully closed")
 	}
 }

@@ -1,10 +1,10 @@
-package util
+package schema
 
 import (
 	"gorm.io/gorm"
 )
 
-func DatabaseType(db *gorm.DB) string {
+func DatabaseDialect(db *gorm.DB) string {
 	if db == nil {
 		return "Unknown"
 	}

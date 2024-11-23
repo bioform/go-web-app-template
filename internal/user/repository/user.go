@@ -28,7 +28,7 @@ type userRepositoryImpl struct {
 
 func NewUserRepository(ctx context.Context) *userRepositoryImpl {
 	return &userRepositoryImpl{
-		db:  database.Get(ctx),
+		db:  database.GetDefault(ctx),
 		ctx: ctx,
 	}
 }

@@ -30,7 +30,7 @@ func main() {
 		return
 	}
 
-	db := database.SQL_DB
+	db := database.DefaultSqlDB
 	ctx := context.Background()
 	command := args[0]
 

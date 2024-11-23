@@ -1,15 +1,18 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/bioform/go-web-app-template/pkg/database"
-	dbutil "github.com/bioform/go-web-app-template/pkg/database/util"
-	"github.com/pressly/goose/v3"
+	"github.com/bioform/go-web-app-template/pkg/database/schema"
+	dbutil "github.com/bioform/go-web-app-template/pkg/database/schema"
 )
 
 func exportSchema(config dbutil.DBConfig) error {
@@ -64,8 +67,10 @@ func addLastMigrationIdentifier(filePath, identifier string) error {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
-	// Prepend the comment.
-	newContents := fmt.Sprintf("-- Latest Migration: %s\n%s", identifier, originalContents)
+	schema := filterSchema(originalContents)
+
+	// Add the last migration identifier to the beginning of the file.
+	newContents := fmt.Sprintf("%s%s\n%s", dbutil.SchemaVersionPrefix, identifier, schema)
 
 	// Write the updated contents back to the file.
 	err = os.WriteFile(filePath, []byte(newContents), 0644)
@@ -77,12 +82,37 @@ func addLastMigrationIdentifier(filePath, identifier string) error {
 	return nil
 }
 
-func main() {
-	db := database.Get(context.Background())
-	sqlDb := database.SQL_DB
-	defer database.Close()
+// filterSchema removes lines related to `sqlite_sequence` from the schema content.
+func filterSchema(schemaContent []byte) string {
+	scanner := bufio.NewScanner(bytes.NewReader(schemaContent))
+	var filteredLines []string
 
-	dbType := dbutil.DatabaseType(db)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// Exclude lines that define or manipulate the `sqlite_sequence` table
+		if strings.Contains(line, "CREATE TABLE sqlite_sequence") ||
+			strings.Contains(line, "DELETE FROM sqlite_sequence") ||
+			strings.Contains(line, "INSERT INTO sqlite_sequence") {
+			continue
+		}
+
+		filteredLines = append(filteredLines, line)
+	}
+
+	return strings.Join(filteredLines, "\n")
+}
+
+func main() {
+	db := database.GetDefault(context.Background())
+	sqlDb, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get SQL database: %v", err)
+	}
+
+	defer database.CloseDefault()
+
+	dbType := dbutil.DatabaseDialect(db)
 	// Example configuration: Replace with your actual database details
 	config, err := dbutil.ParseDSN(dbType, database.Dsn)
 	if err != nil {
@@ -96,7 +126,7 @@ func main() {
 	}
 
 	// Get the most recent migration version
-	version, err := goose.GetDBVersion(sqlDb)
+	version, err := schema.DBVersion(sqlDb)
 	if err != nil {
 		log.Fatalf("Failed to get DB version: %v", err)
 	}

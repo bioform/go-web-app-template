@@ -5,7 +5,6 @@ CREATE TABLE goose_db_version (
 		is_applied INTEGER NOT NULL,
 		tstamp TIMESTAMP DEFAULT (datetime('now'))
 	);
-CREATE TABLE sqlite_sequence(name,seq);
 CREATE TABLE `users` (`id` integer PRIMARY KEY AUTOINCREMENT,`created_at` datetime,`updated_at` datetime,`deleted_at` datetime,`name` text,`email` text NOT NULL,`password_hash` text NOT NULL,CONSTRAINT `uni_users_email` UNIQUE (`email`));
 CREATE INDEX `idx_users_deleted_at` ON `users`(`deleted_at`);
 CREATE TABLE `sessions` (`token` varchar(43),`data` blob,`expiry` datetime,PRIMARY KEY (`token`));

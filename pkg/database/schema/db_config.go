@@ -1,9 +1,10 @@
-package util
+package schema
 
 import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -37,6 +38,10 @@ type DBConfig struct {
 // SQLite DSNs are typically just the database file path (e.g., file::memory: or /path/to/database.db).
 
 var dbSchemaFile = "db/schema.sql"
+
+func ReadSchemaFile() ([]byte, error) {
+	return os.ReadFile(dbSchemaFile)
+}
 
 func ParseDSN(dbType, dsn string) (DBConfig, error) {
 	switch dbType {

@@ -26,7 +26,7 @@ func main() {
 		panic(fmt.Sprintf("http server error: %s", err))
 	}
 
-	defer database.Close()
+	defer database.CloseDefault()
 
 	// Wait for the graceful shutdown to complete
 	<-done

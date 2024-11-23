@@ -1,4 +1,4 @@
-package util
+package schema
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func TestDatabaseType(t *testing.T) {
 				}
 			}
 
-			result := DatabaseType(db)
+			result := DatabaseDialect(db)
 			if result != tt.expected {
 				t.Errorf("expected %v; got %v", tt.expected, result)
 			}

@@ -25,5 +25,5 @@ go.work.sum
 .env
 
 /dist
-db/development.db
-db/test.db
+db/data/development.db
+db/data/test.db

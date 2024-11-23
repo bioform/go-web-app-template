@@ -30,7 +30,7 @@ type helloHandler struct {
 
 func newHelloHandler(ctx context.Context) *helloHandler {
 	return &helloHandler{
-		db: database.Get(ctx),
+		db: database.GetDefault(ctx),
 	}
 }
 

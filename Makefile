@@ -1,8 +1,7 @@
-
 # Define a reusable command for loading .env variables
 build:
 	go build -o dist/server cmd/api/main.go
-	go build -o dist/migrate cmd/migrate/main.go
+	go build -o dist/migrate-up cmd/migrate_up/main.go
 run:
 	go run cmd/api/main.go
 test:
@@ -14,11 +13,12 @@ db-schema-check:
 	go run cmd/db_schema_check/main.go
 migrate:
 	go run cmd/migrate/main.go $(filter-out $@,$(MAKECMDGOALS))
-migrate-test:
+db-test-prepare:
 	APP_ENV=test \
-	go run cmd/migrate/main.go $(filter-out $@,$(MAKECMDGOALS))
-migrate-run:
-	./dist/migrate $(filter-out $@,$(MAKECMDGOALS))
+	go run cmd/db_test_prepare/main.go
+migrate-up:
+	go build -o dist/migrate-up cmd/migrate_up/main.go
+	dist/migrate-up
 vet:
 	go vet ./...
 
