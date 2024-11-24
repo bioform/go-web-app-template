@@ -67,7 +67,7 @@ func addLastMigrationIdentifier(filePath, identifier string) error {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
-	schema := filterSchema(originalContents)
+	schema := cleanupSchema(originalContents)
 
 	// Add the last migration identifier to the beginning of the file.
 	newContents := fmt.Sprintf("%s%s\n%s", dbutil.SchemaVersionPrefix, identifier, schema)
@@ -82,8 +82,8 @@ func addLastMigrationIdentifier(filePath, identifier string) error {
 	return nil
 }
 
-// filterSchema removes lines related to `sqlite_sequence` from the schema content.
-func filterSchema(schemaContent []byte) string {
+// cleanupSchema removes lines related to `sqlite_sequence` from the schema content.
+func cleanupSchema(schemaContent []byte) string {
 	scanner := bufio.NewScanner(bytes.NewReader(schemaContent))
 	var filteredLines []string
 

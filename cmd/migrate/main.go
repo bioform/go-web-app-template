@@ -18,7 +18,7 @@ import (
 
 var (
 	flags = flag.NewFlagSet("goose", flag.ExitOnError)
-	dir   = flags.String("dir", "./db/migrations", "directory with migration files")
+	dir   = flags.String("dir", "db/migrations", "directory with migration files")
 )
 
 func main() {
@@ -30,8 +30,12 @@ func main() {
 		return
 	}
 
-	db := database.DefaultSqlDB
 	ctx := context.Background()
+	db, err := database.GetDefault(ctx).DB()
+	if err != nil {
+		log.Fatalf("failed to open DB: %v", err)
+	}
+
 	command := args[0]
 
 	arguments := []string{"-dir", *dir}
@@ -39,7 +43,7 @@ func main() {
 		arguments = append(arguments, args[1:]...)
 	}
 
-	fmt.Println("Command: ", command)
+	fmt.Println("Command: ", command, "Arguments: ", arguments)
 
 	if err := goose.RunContext(ctx, command, db, *dir, arguments...); err != nil {
 		log.Fatalf("goose %v: %v", command, err)

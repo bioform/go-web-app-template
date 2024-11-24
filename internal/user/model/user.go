@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/bioform/go-web-app-template/pkg/util/crypt"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +18,21 @@ type User struct {
 
 	Name         string
 	Email        string `gorm:"unique;not null"`
-	Password     string `gorm:"-:migration"` // Don't create a `password` column in the database
+	Password     string `gorm:"-"` // Don't create a `password` column in the database
 	PasswordHash string `gorm:"not null"`
+}
+
+func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	if len(u.Password) > 0 {
+		// Password was updated, hash it
+		hashedPassword, err := crypt.HashPassword(u.Password)
+		if err != nil {
+			return err
+		}
+		u.PasswordHash = hashedPassword
+		u.Password = "" // Clear the plain password after hashing
+	}
+	return
 }
 
 func (u User) LogValue() slog.Value {

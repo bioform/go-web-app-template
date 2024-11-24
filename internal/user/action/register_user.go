@@ -1,6 +1,8 @@
 package action
 
 import (
+	"context"
+
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/internal/user/repository"
 )
@@ -14,7 +16,7 @@ func NewRegisterUser(repo repository.UserRepository) *RegisterUser {
 	return &RegisterUser{repo: repo}
 }
 
-func (s *RegisterUser) Call(name, email, password string) error {
+func (s *RegisterUser) Call(ctx context.Context, name, email, password string) error {
 	// Business logic for registering a user
 	newUser := model.User{
 		Name:     name,
@@ -22,7 +24,7 @@ func (s *RegisterUser) Call(name, email, password string) error {
 		Password: password,
 	}
 
-	_, err := s.repo.Create(&newUser)
+	_, err := s.repo.Create(ctx, &newUser)
 
 	return err
 }

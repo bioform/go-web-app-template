@@ -11,41 +11,22 @@ import (
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/pkg/database"
 	"github.com/bioform/go-web-app-template/pkg/util"
-	"github.com/bioform/go-web-app-template/pkg/util/crypt"
 )
 
 type UserRepository interface {
-	Create(user *model.User) (uint, error)
-	FindByID(id uint) (*model.User, error)
-	FindByEmailAndPassword(email, password string) (*model.User, error)
+	Create(ctx context.Context, user *model.User) (uint, error)
+	FindByID(ctx context.Context, id uint) (*model.User, error)
+	FindByEmailAndPassword(ctx context.Context, email, password string) (*model.User, error)
 }
 
-type userRepositoryImpl struct {
-	// database connection or ORM
-	db  *gorm.DB
-	ctx context.Context
+type userRepositoryImpl struct{}
+
+func NewUserRepository() *userRepositoryImpl {
+	return &userRepositoryImpl{}
 }
 
-func NewUserRepository(ctx context.Context) *userRepositoryImpl {
-	return &userRepositoryImpl{
-		db:  database.GetDefault(ctx),
-		ctx: ctx,
-	}
-}
-
-func (r *userRepositoryImpl) Create(user *model.User) (uint, error) {
-
-	if len(user.Password) > 0 {
-		// Password was updated, hash it
-		hashedPassword, err := crypt.HashPassword(user.Password)
-		if err != nil {
-			return 0, err
-		}
-		user.PasswordHash = hashedPassword
-		user.Password = "" // Clear the plain password after hashing
-	}
-
-	db := r.db
+func (r *userRepositoryImpl) Create(ctx context.Context, user *model.User) (uint, error) {
+	db := database.GetDefault(ctx)
 
 	err := db.Create(user).Error
 	if err != nil {
@@ -57,10 +38,11 @@ func (r *userRepositoryImpl) Create(user *model.User) (uint, error) {
 	return user.ID, nil
 }
 
-func (r *userRepositoryImpl) FindByID(id uint) (*model.User, error) {
+func (r *userRepositoryImpl) FindByID(ctx context.Context, id uint) (*model.User, error) {
+	db := database.GetDefault(ctx)
 	// Logic to retrieve a user by ID from the database
 	user := &model.User{}
-	if err := r.db.First(user, id).Error; err != nil {
+	if err := db.First(user, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("user with ID %d not found. %w", id, ErrRecordNotFound)
 		}
@@ -70,12 +52,13 @@ func (r *userRepositoryImpl) FindByID(id uint) (*model.User, error) {
 	return user, nil
 }
 
-func (r *userRepositoryImpl) FindByEmailAndPassword(email, password string) (_ *model.User, err error) {
+func (r *userRepositoryImpl) FindByEmailAndPassword(ctx context.Context, email, password string) (_ *model.User, err error) {
 	defer util.WrapError(&err, "repository.FindByEmailAndPassword(%q)", email)
 
+	db := database.GetDefault(ctx)
 	// Logic to retrieve a user by email from the database
 	user := &model.User{}
-	if err := r.db.Where("email = ?", email).First(user).Error; err != nil {
+	if err := db.Where("email = ?", email).First(user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrRecordNotFound
 		}

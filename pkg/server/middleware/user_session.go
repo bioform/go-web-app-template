@@ -16,8 +16,8 @@ func UserSession(next http.Handler) http.Handler {
 
 		if userID != 0 {
 			logger := logging.Get(ctx)
-			repo := repository.NewUserRepository(ctx)
-			user, err := repo.FindByID(uint(userID))
+			repo := repository.NewUserRepository()
+			user, err := repo.FindByID(ctx, uint(userID))
 
 			if err == nil {
 				// Add the user to the request context

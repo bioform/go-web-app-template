@@ -40,7 +40,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/rezakhademix/govalidator/v2 v2.0.9
 	github.com/spf13/viper v1.19.0
+	github.com/stretchr/testify v1.10.0 // indirect
 	golang.org/x/crypto v0.29.0
 	golang.org/x/sys v0.27.0 // indirect
 	gorm.io/gorm v1.25.12

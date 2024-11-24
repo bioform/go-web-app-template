@@ -28,6 +28,10 @@ func Child(ctx context.Context, ancestorLogger *slog.Logger) *slog.Logger {
 		logger = ancestorLogger
 	}
 
+	if len(traceID) == 0 {
+		return logger
+	}
+
 	logger = logger.With(slog.String(string(ContextKeyTraceID), traceID))
 
 	return logger
@@ -44,10 +48,10 @@ func AssignTraceID(ctx context.Context) context.Context {
 // GetTraceID will get reqID from a http request and return it as a string
 func GetTraceID(ctx context.Context) string {
 
-	reqID := ctx.Value(ContextKeyTraceID)
+	traceIDValue := ctx.Value(ContextKeyTraceID)
 
-	if ret, ok := reqID.(string); ok {
-		return ret
+	if traceID, ok := traceIDValue.(string); ok {
+		return traceID
 	}
 
 	return ""

@@ -23,7 +23,7 @@ type LoginOutput struct {
 }
 
 func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) {
-	user, err := action.AuthenticateUser(ctx).Call(input.Body.Email, input.Body.Password)
+	user, err := action.AuthenticateUser().Call(ctx, input.Body.Email, input.Body.Password)
 	if err != nil {
 		return nil, huma.Error404NotFound("User not found")
 	}

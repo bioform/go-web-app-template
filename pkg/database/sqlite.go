@@ -6,13 +6,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bioform/go-web-app-template/pkg/env"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func initSqliteDB(dsn string) (*gorm.DB, error) {
 	sqliteDbPath, err := findFile(dsn)
-	if err != nil {
+	if err != nil && env.IsProduction() {
 		log.Panicf("cannot find db file(%s): %v", dsn, err)
 	}
 

@@ -33,13 +33,17 @@ func Health(requestContext context.Context) DBHealthStats {
 	stats := DBHealthStats{}
 
 	// Ping the database
-	err := DefaultSqlDB.PingContext(ctx)
+	db, err := GetDefault(requestContext).DB()
 	if err != nil {
-		stats.Status = "down"
-		stats.Error = fmt.Sprintf("db down: %v", err)
-
+		setDownStatus(&stats, err)
 		log.Error("db down", slog.Any("error", err))
-		// log.Fatalf("db down(%s): %v", dsn, err) // Log the error and terminate the program
+
+		return stats
+	}
+	err = db.PingContext(ctx)
+	if err != nil {
+		setDownStatus(&stats, err)
+		log.Error("db down", slog.Any("error", err))
 
 		return stats
 	}
@@ -57,7 +61,7 @@ func Health(requestContext context.Context) DBHealthStats {
 	// stats["max_lifetime_closed"] = strconv.FormatInt(dbStats.MaxLifetimeClosed, 10)
 
 	// Get database stats (like open connections, in use, idle, etc.)
-	dbStats := DefaultSqlDB.Stats()
+	dbStats := db.Stats()
 	stats.OpenConnections = dbStats.OpenConnections
 	stats.InUse = dbStats.InUse
 	stats.Idle = dbStats.Idle
@@ -84,4 +88,9 @@ func Health(requestContext context.Context) DBHealthStats {
 	}
 
 	return stats
+}
+
+func setDownStatus(stats *DBHealthStats, err error) {
+	stats.Status = "down"
+	stats.Error = fmt.Sprintf("db down: %v", err)
 }
