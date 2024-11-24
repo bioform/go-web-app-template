@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 
 	"github.com/bioform/go-web-app-template/internal/user/repository"
+	"github.com/bioform/go-web-app-template/pkg/logging"
 	"github.com/bioform/go-web-app-template/pkg/server/session"
 )
 
@@ -15,16 +15,20 @@ func UserSession(next http.Handler) http.Handler {
 		userID := session.Manager.GetInt64(ctx, session.UserIdKey)
 
 		if userID != 0 {
+			logger := logging.Get(ctx)
 			repo := repository.NewUserRepository(ctx)
 			user, err := repo.FindByID(uint(userID))
+
 			if err == nil {
 				// Add the user to the request context
 				ctx := context.WithValue(ctx, session.UserKey, user)
 				r = r.WithContext(ctx)
+
+				logger.Info("User loaded from session", "user", user)
 			} else {
 				// Clear the session if the user can't be found
 				session.Manager.Remove(ctx, session.UserIdKey)
-				slog.Error("Failed to load user from session", "error", err)
+				logger.Error("Failed to load user from session", "error", err)
 			}
 		}
 

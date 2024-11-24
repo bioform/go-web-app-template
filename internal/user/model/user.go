@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -18,6 +19,13 @@ type User struct {
 	Email        string `gorm:"unique;not null"`
 	Password     string `gorm:"-:migration"` // Don't create a `password` column in the database
 	PasswordHash string `gorm:"not null"`
+}
+
+func (u User) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Uint64("id", uint64(u.ID)),
+		slog.String("email", u.Email),
+	)
 }
 
 type EmailDuplicateError struct {
