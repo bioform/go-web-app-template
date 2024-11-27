@@ -9,10 +9,35 @@ import (
 	"github.com/bioform/go-web-app-template/pkg/action"
 	_ "github.com/bioform/go-web-app-template/pkg/database" // init() in database.go
 	"github.com/bioform/go-web-app-template/pkg/dbaction"
-	"github.com/bioform/go-web-app-template/pkg/logging"
 	validator "github.com/rezakhademix/govalidator/v2"
 	"gorm.io/gorm"
+
+	"github.com/bioform/go-web-app-template/pkg/logging"
 )
+
+func main() {
+	ctx := context.TODO()
+	log := logging.Get(ctx)
+
+	a := &MyAction{
+		SomeAttr: "mmm", // not invalid length
+	}
+
+	// Call the template method, which handles the shared logic implicitly.
+	ok, err := action.New(a).Perform(ctx)
+	if !ok {
+		fmt.Println("Error message: ", err)
+
+		var validationError *action.ValidationError
+		if errors.As(err, &validationError) {
+			log.Error("Error details", "error", validationError.Errors())
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Example Action implementation
+/////////////////////////////////////////////////////////////////////////////////////////
 
 // Define a specific type embedding BaseAction.
 type MyAction struct {
@@ -23,6 +48,7 @@ type MyAction struct {
 
 // Implement the specific behavior for MyAction.
 func (a *MyAction) Perform(ctx context.Context) error {
+	// Put your business logic here.
 	log := logging.Get(ctx)
 	db := a.DB(ctx)
 
@@ -48,24 +74,4 @@ func (a *MyAction) IsValid(ctx context.Context) (bool, action.ErrorMap) {
 	v := validator.New()
 	v.RequiredString(a.SomeAttr, "SomeAttr", "required")
 	return v.IsPassed(), v.Errors()
-}
-
-func main() {
-	ctx := context.TODO()
-	log := logging.Get(ctx)
-
-	a := &MyAction{
-		SomeAttr: "mmm", // not invalid length
-	}
-
-	// Call the template method, which handles the shared logic implicitly.
-	ok, err := action.New(a).Perform(ctx)
-	if !ok {
-		fmt.Println("Error message: ", err)
-
-		var validationError *action.ValidationError
-		if errors.As(err, &validationError) {
-			log.Error("Error details", "error", validationError.Errors())
-		}
-	}
 }

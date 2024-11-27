@@ -1,0 +1,19 @@
+# Configuration for mockery
+# This setup assumes mocks will be placed in a "mocks" subfolder relative to each package.
+
+keeptree: True
+disable-version-string: True
+with-expecter: true
+
+# Structuring options
+filename: "mock_{{.InterfaceName | snakecase}}.go"
+dir: "{{.InterfaceDir}}/mocks"
+mockname: "{{.InterfaceName}}"
+outpkg: "mocks"
+
+packages:
+  github.com/bioform/go-web-app-template/pkg/action:
+    config:
+      all: True
+    interfaces:
+      IfaceWithCustomBuildTagInComment:
