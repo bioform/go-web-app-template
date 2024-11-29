@@ -14,7 +14,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	gormDB := database.GetDefault(ctx)
+	gormDB := database.Get(ctx)
 	db, err := gormDB.DB()
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)

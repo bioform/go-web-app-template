@@ -33,7 +33,7 @@ func Health(requestContext context.Context) DBHealthStats {
 	stats := DBHealthStats{}
 
 	// Ping the database
-	db, err := GetDefault(requestContext).DB()
+	db, err := Get(requestContext).DB()
 	if err != nil {
 		setDownStatus(&stats, err)
 		log.Error("db down", slog.Any("error", err))

@@ -9,13 +9,17 @@ import (
 
 var defaultDbProvider *DbProvider
 
-func GetDefault(ctx context.Context) *gorm.DB {
+func Get(ctx context.Context) *gorm.DB {
 	db := defaultDbProvider.DB(ctx)
 	return db.WithContext(ctx)
 }
 
+func With(ctx context.Context, db *gorm.DB) context.Context {
+	return defaultDbProvider.SetDB(ctx, db)
+}
+
 func CloseDefault() {
-	db, err := GetDefault(context.Background()).DB()
+	db, err := Get(context.Background()).DB()
 	if err != nil {
 		slog.Error("Error getting DB connection", slog.String("db", Dsn), slog.Any("error", err))
 		return

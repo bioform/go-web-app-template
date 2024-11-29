@@ -15,6 +15,10 @@ type DbProvider struct {
 	db *gorm.DB
 }
 
+func NewDbProvider(db *gorm.DB) *DbProvider {
+	return &DbProvider{db: db}
+}
+
 func (provider *DbProvider) Transaction(ctx context.Context, lambda func(newContext context.Context) error) error {
 	return provider.db.Transaction(func(tx *gorm.DB) error {
 		return lambda(provider.SetDB(ctx, tx))

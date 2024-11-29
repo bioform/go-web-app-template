@@ -26,7 +26,7 @@ func NewUserRepository() *userRepositoryImpl {
 }
 
 func (r *userRepositoryImpl) Create(ctx context.Context, user *model.User) (uint, error) {
-	db := database.GetDefault(ctx)
+	db := database.Get(ctx)
 
 	err := db.Create(user).Error
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user *model.User) (uint
 }
 
 func (r *userRepositoryImpl) FindByID(ctx context.Context, id uint) (*model.User, error) {
-	db := database.GetDefault(ctx)
+	db := database.Get(ctx)
 	// Logic to retrieve a user by ID from the database
 	user := &model.User{}
 	if err := db.First(user, id).Error; err != nil {
@@ -55,7 +55,7 @@ func (r *userRepositoryImpl) FindByID(ctx context.Context, id uint) (*model.User
 func (r *userRepositoryImpl) FindByEmailAndPassword(ctx context.Context, email, password string) (_ *model.User, err error) {
 	defer util.WrapError(&err, "repository.FindByEmailAndPassword(%q)", email)
 
-	db := database.GetDefault(ctx)
+	db := database.Get(ctx)
 	// Logic to retrieve a user by email from the database
 	user := &model.User{}
 	if err := db.Where("email = ?", email).First(user).Error; err != nil {

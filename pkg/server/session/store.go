@@ -20,7 +20,7 @@ const (
 )
 
 func init() {
-	db := database.GetDefault(context.Background())
+	db := database.Get(context.Background())
 	var err error
 
 	Manager = scs.New()

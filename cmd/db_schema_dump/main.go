@@ -104,7 +104,7 @@ func cleanupSchema(schemaContent []byte) string {
 }
 
 func main() {
-	db := database.GetDefault(context.Background())
+	db := database.Get(context.Background())
 	sqlDb, err := db.DB()
 	if err != nil {
 		log.Fatalf("Failed to get SQL database: %v", err)

@@ -34,7 +34,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	db, err := database.GetDefault(ctx).DB()
+	db, err := database.Get(ctx).DB()
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)
 	}
