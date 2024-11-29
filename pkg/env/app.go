@@ -5,6 +5,11 @@ import "os"
 var appEnv string
 
 func init() {
+	if os.Getenv("TESTING") == "1" {
+		appEnv = "test"
+		return
+	}
+
 	appEnv = Get("APP_ENV", "development")
 }
 
