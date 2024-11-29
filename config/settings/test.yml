@@ -1,2 +1,2 @@
 database:
-  dsn: ./db/data/test.db
+  dsn: file::memory:?cache=shared

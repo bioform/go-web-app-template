@@ -28,7 +28,7 @@ func Health(requestContext context.Context) DBHealthStats {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	log := logging.Get(requestContext)
+	log := logging.Logger(requestContext)
 
 	stats := DBHealthStats{}
 

@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/bioform/go-web-app-template/pkg/env"
+	"github.com/lmittmann/tint"
 )
 
 var once sync.Once
@@ -51,6 +53,15 @@ func handler(opts *slog.HandlerOptions) slog.Handler {
 		return slog.NewJSONHandler(os.Stdout, opts)
 	}
 
+	if colorize() {
+		return tint.NewHandler(os.Stdout, &tint.Options{
+			Level:       opts.Level,
+			AddSource:   opts.AddSource,
+			ReplaceAttr: opts.ReplaceAttr,
+			TimeFormat:  time.TimeOnly,
+		})
+	}
+
 	return slog.NewTextHandler(os.Stdout, opts)
 }
 
@@ -61,4 +72,9 @@ func truncateSourcePath(wd string, a slog.Attr) {
 		return
 	}
 	s.File = file
+}
+
+func colorize() bool {
+	colorize := env.Get("LOG_COLORIZE", "true")
+	return colorize == "true" || colorize == "1"
 }

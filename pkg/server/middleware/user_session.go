@@ -15,7 +15,7 @@ func UserSession(next http.Handler) http.Handler {
 		userID := session.Manager.GetInt64(ctx, session.UserIdKey)
 
 		if userID != 0 {
-			logger := logging.Get(ctx)
+			logger := logging.Logger(ctx)
 			repo := repository.NewUserRepository()
 			user, err := repo.FindByID(ctx, uint(userID))
 

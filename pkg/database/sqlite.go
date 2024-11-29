@@ -1,41 +1,37 @@
 package database
 
 import (
-	"log"
+	"fmt"
 	"log/slog"
-	"os"
-	"path/filepath"
+	"strings"
 
+	"github.com/bioform/go-web-app-template/pkg/database/find"
+	"github.com/bioform/go-web-app-template/pkg/database/schema"
 	"github.com/bioform/go-web-app-template/pkg/env"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func initSqliteDB(dsn string) (*gorm.DB, error) {
-	sqliteDbPath, err := findFile(dsn)
+	if strings.Contains(dsn, ":memory:") || strings.Contains(dsn, "mode=memory") {
+		slog.Info("Restore schema(in-memory DB)", slog.String("dsn", dsn))
+
+		db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{TranslateError: true})
+		if err != nil {
+			return nil, fmt.Errorf("failed to open in-memory database: %w", err)
+		}
+		err = schema.Restore(db)
+		if err != nil {
+			return nil, fmt.Errorf("failed to restore schema: %w", err)
+		}
+		return db, nil
+	}
+
+	dsn, err := find.File(dsn)
 	if err != nil && env.IsProduction() {
-		log.Panicf("cannot find db file(%s): %v", dsn, err)
+		slog.Warn("cannot find db file(%s): %v", dsn, err)
 	}
 
 	slog.Info("Connecting to database", slog.String("dsn", dsn))
-	return gorm.Open(sqlite.Open(sqliteDbPath), &gorm.Config{TranslateError: true})
-}
-
-func findFile(path string) (string, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	for {
-		absolutePath := filepath.Join(dir, path)
-		if _, err := os.Stat(absolutePath); err == nil {
-			return absolutePath, nil // found the root
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			return "", os.ErrNotExist // reached the filesystem root
-		}
-		dir = parent
-	}
+	return gorm.Open(sqlite.Open(dsn), &gorm.Config{TranslateError: true})
 }

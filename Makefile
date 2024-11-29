@@ -35,12 +35,12 @@ audit: test | vet | lint-all
 ## test: run all tests
 .PHONY: test
 test:
-	ginkgo -r --randomize-all --randomize-suites -cover -coverprofile=coverage.out --output-dir=.
+	@ginkgo -r --randomize-all --randomize-suites -cover -coverprofile=coverage.out --output-dir=.
 
 ## test/cover: run all tests and display coverage
 .PHONY: test/cover
 test/cover: test
-	go tool cover -html=coverage.out -o coverage.html
+	@go tool cover -html=coverage.out -o coverage.html
 
 
 # ==================================================================================== #

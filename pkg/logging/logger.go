@@ -13,11 +13,11 @@ type ContextKey string // can be unexported
 // ContextKeyTraceID is the ContextKey for TraceID
 const ContextKeyTraceID ContextKey = "trace_id" // can be unexported
 
-func Get(ctx context.Context) *slog.Logger {
-	return Child(ctx, slog.Default())
+func Logger(ctx context.Context) *slog.Logger {
+	return ChildLogger(ctx, slog.Default())
 }
 
-func Child(ctx context.Context, ancestorLogger *slog.Logger) *slog.Logger {
+func ChildLogger(ctx context.Context, ancestorLogger *slog.Logger) *slog.Logger {
 
 	traceID := GetTraceID(ctx)
 

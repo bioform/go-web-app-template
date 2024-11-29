@@ -1,2 +1,2 @@
 database:
-  dsn: ./db/data/development.db
+  dsn: ./db/data/development.sqlite3

@@ -18,7 +18,7 @@ func (a BaseAction) DB(ctx context.Context) *gorm.DB {
 
 	dbProvider, ok := actionTransactionProvider.(*database.DbProvider)
 	if !ok {
-		log := logging.Get(ctx)
+		log := logging.Logger(ctx)
 		log.Error("DB provider is not a *database.DbProvider", "provider", actionTransactionProvider)
 		return nil // or handle the error appropriately
 	}

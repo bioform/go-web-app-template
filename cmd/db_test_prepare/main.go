@@ -143,14 +143,8 @@ func main() {
 		sqlDB.Close()
 	}()
 
-	// Read schema.sql.
-	schemaSQL, err := schema.ReadSchemaFile()
-	if err != nil {
-		log.Fatalf("failed to read schema file: %v", err)
-	}
-
 	// Import the schema.sql file.
-	if err := db.Exec(string(schemaSQL)).Error; err != nil {
+	if err := schema.Restore(db); err != nil {
 		log.Fatalf("failed to import schema: %v", err)
 	}
 

@@ -1,2 +1,2 @@
 database:
-  dsn: ./db/data/production.db
+  dsn: ./db/data/production.sqlite3

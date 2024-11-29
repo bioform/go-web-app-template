@@ -17,7 +17,7 @@ import (
 
 func main() {
 	ctx := context.TODO()
-	log := logging.Get(ctx)
+	log := logging.Logger(ctx)
 
 	a := &MyAction{
 		SomeAttr: "mmm", // not invalid length
@@ -49,7 +49,7 @@ type MyAction struct {
 // Implement the specific behavior for MyAction.
 func (a *MyAction) Perform(ctx context.Context) error {
 	// Put your business logic here.
-	log := logging.Get(ctx)
+	log := logging.Logger(ctx)
 	db := a.DB(ctx)
 
 	log.Info("MyAction-specific perform logic")

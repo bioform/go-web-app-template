@@ -3,6 +3,7 @@ module github.com/bioform/go-web-app-template
 go 1.23.3
 
 require (
+	github.com/lmittmann/tint v1.0.5
 	github.com/pressly/goose/v3 v3.22.1
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 	gorm.io/driver/sqlite v1.5.6
@@ -51,7 +52,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.36.0
-	github.com/pkg/errors v0.9.1
 	github.com/rezakhademix/govalidator/v2 v2.0.9
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0

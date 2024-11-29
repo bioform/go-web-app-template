@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/bioform/go-web-app-template/pkg/database/find"
 )
 
 type DBConfig struct {
@@ -40,7 +42,11 @@ type DBConfig struct {
 var dbSchemaFile = "db/schema.sql"
 
 func ReadSchemaFile() ([]byte, error) {
-	return os.ReadFile(dbSchemaFile)
+	path, err := find.File(dbSchemaFile)
+	if err != nil {
+		return nil, err
+	}
+	return os.ReadFile(path)
 }
 
 func ParseDSN(dbType, dsn string) (DBConfig, error) {
