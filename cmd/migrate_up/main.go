@@ -20,7 +20,11 @@ func main() {
 		log.Fatalf("failed to open DB: %v", err)
 	}
 	dialect := schema.DatabaseDialect(gormDB)
-	goose.SetDialect(dialect)
+	err = goose.SetDialect(dialect)
+	if err != nil {
+		log.Fatalf("failed to set dialect: %v", err)
+	}
+
 	goose.SetBaseFS(migration.MigrationsFS)
 
 	if err := goose.Up(db, migration.MigrationsDir); err != nil {

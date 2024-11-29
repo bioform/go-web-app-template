@@ -10,6 +10,8 @@
 
 # Test binary, built with `go test -c`
 *.test
+coverage.out
+coverage.html
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
@@ -25,5 +27,5 @@ go.work.sum
 .env
 
 /dist
-db/data/development.db
-db/data/test.db
+db/data/development.sqlite3
+db/data/test.sqlite3

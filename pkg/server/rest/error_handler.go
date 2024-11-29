@@ -31,7 +31,10 @@ func handleError(w http.ResponseWriter, r *http.Request, statusCode int, err err
 		apiErr = apierror.NewWithError(statusCode, "Internal Server Error", err).(apierror.Error)
 	}
 
-	Encode(w, r, statusCode, apiErr)
+	err = Encode(w, r, statusCode, apiErr)
+	if err != nil {
+		apiErr = apierror.NewWithError(statusCode, "Internal Server Error...", err).(apierror.Error)
+	}
 
 	// if the error cause exists, log it
 	if apiErr.Unwrap() != nil {

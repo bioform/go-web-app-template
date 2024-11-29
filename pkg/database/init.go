@@ -18,9 +18,6 @@ func init() {
 	Dsn = config.App.Database.Dsn
 
 	db, err := initSqliteDB(Dsn)
-	db.Transaction(func(tx *gorm.DB) error {
-		return nil
-	})
 	if err != nil {
 		// This will not be a connection error, but a DSN parse error or
 		// another initialization error.

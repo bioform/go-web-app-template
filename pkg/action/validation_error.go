@@ -21,23 +21,29 @@ type ValidationError struct {
 }
 
 func NewAuthorizationError(performer any) *AuthorizationError {
-	return &AuthorizationError{
+	err := &AuthorizationError{
 		ActionError: ActionError{performer: performer},
 	}
+
+	return err
 }
 
 func NewDisabledError(performer any, errs ErrorMap) *DisabledError {
-	return &DisabledError{
+	err := &DisabledError{
 		ActionError: ActionError{performer: performer},
 		ErrorMap:    errs,
 	}
+
+	return err
 }
 
 func NewValidationError(performer any, errs ErrorMap) *ValidationError {
-	return &ValidationError{
+	err := &ValidationError{
 		ActionError: ActionError{performer: performer},
 		ErrorMap:    errs,
 	}
+
+	return err
 }
 
 func (*ActionError) Error() string {

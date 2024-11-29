@@ -22,7 +22,10 @@ var (
 )
 
 func main() {
-	flags.Parse(os.Args[1:])
+	err := flags.Parse(os.Args[1:])
+	if err != nil {
+		log.Fatalf("failed to parse flags: %v", err)
+	}
 	args := flags.Args()
 
 	if len(args) < 1 {

@@ -1,6 +1,10 @@
 package config
 
-import "github.com/confluentinc/confluent-kafka-go/kafka"
+import (
+	"log"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+)
 
 // EventConfig configuration for Kafka consumer
 type EventConfig struct {
@@ -40,7 +44,11 @@ func flattenKafkaConfigMap(prefix string, src map[string]any, cm *kafka.ConfigMa
 		case map[string]any:
 			flattenKafkaConfigMap(prefix+k, child, cm)
 		default:
-			cm.SetKey(prefix+k, child)
+			key := prefix + k
+			err := cm.SetKey(key, child)
+			if err != nil {
+				log.Fatalf("error setting key %s: %v", key, err)
+			}
 		}
 	}
 }

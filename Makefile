@@ -1,25 +1,139 @@
-# Define a reusable command for loading .env variables
-build:
-	go build -o dist/server cmd/api/main.go
-	go build -o dist/migrate-up cmd/migrate_up/main.go
-run:
-	go run cmd/api/main.go
+# Change these variables as necessary.
+main_package_path = ./cmd/api/main.go
+binary_name = server
+
+# ==================================================================================== #
+# HELPERS
+# ==================================================================================== #
+
+## help: print this help message
+.PHONY: help
+help:
+	@echo 'Usage:'
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/ /'
+
+.PHONY: confirm
+confirm:
+	@echo -n 'Are you sure? [y/N] ' && read ans && [ $${ans:-N} = y ]
+
+.PHONY: no-dirty
+no-dirty:
+	@test -z "$(shell git status --porcelain)"
+
+
+# ==================================================================================== #
+# QUALITY CONTROL
+# ==================================================================================== #
+
+## audit: run quality control checks
+.PHONY: audit
+audit: test | vet | lint-all
+	go mod tidy -diff
+	go mod verify
+	test -z "$(shell gofmt -l .)"
+
+## test: run all tests
+.PHONY: test
 test:
-	ginkgo ./...
-db-schema-dump:
+	ginkgo -r --randomize-all --randomize-suites -cover -coverprofile=coverage.out --output-dir=.
+
+## test/cover: run all tests and display coverage
+.PHONY: test/cover
+test/cover: test
+	go tool cover -html=coverage.out -o coverage.html
+
+
+# ==================================================================================== #
+# DEVELOPMENT
+# ==================================================================================== #
+
+## tidy: tidy modfiles and format .go files
+.PHONY: tidy
+tidy:
+	go mod tidy -v
+	go fmt ./...
+
+## build: build the application
+.PHONY: build
+build: build/migrate/up
+	go build -o dist/${binary_name} ${main_package_path}
+
+## build: build the application
+.PHONY: build/migrate/up
+build/migrate/up:
+	go build -o dist/migrate-up cmd/migrate_up/main.go
+
+## run: run the API server
+.PHONY: run
+run: build
+	./dist/server
+
+## run/live: run the application with reloading on file changes
+.PHONY: run/live
+run/live:
+	go run github.com/cosmtrek/air@v1.43.0 \
+		--build.cmd "make build" --build.bin "dist/${binary_name}" --build.delay "100" \
+		--build.exclude_dir "db,dist" \
+		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico, out" \
+		--misc.clean_on_exit "true"
+
+## db/schema/dump: dump the database schema
+.PHONY: db/schema/dump
+db/schema/dump:
 	go run cmd/db_schema_dump/main.go
-db-schema-check:
+
+## db/schema/check: check the database schema
+db/schema/check:
 	go run cmd/db_schema_check/main.go
-migrate:
+
+## db/migrate: run database migrations. Usage: make db/migrate up/down
+.PHONY: db/migrate
+db/migrate:
 	go run cmd/migrate/main.go $(filter-out $@,$(MAKECMDGOALS))
-db-test-prepare:
+
+## db/test/prepare: prepare the test database. Recreate the test database and run restore from the schema dump
+.PHONY: db/test/prepare
+db/test/prepare:
 	APP_ENV=test \
 	go run cmd/db_test_prepare/main.go
-migrate-up:
+
+## db/migrate/up: run database migrations from the binary
+.PHONY: db/migrate/up
+db/migrate/up: build/migrate/up
 	dist/migrate-up
+
+## vet: run go vet
+.PHONY: vet
 vet:
 	go vet ./...
 
+.PHONY: lint
+## lint: runs linter for a given directory
+lint:
+	@ if [ -z "$(PACKAGE)" ]; then echo >&2 please set directory via variable PACKAGE; exit 2; fi
+	@ docker run -t  --rm -v "`pwd`:/workspace:cached" -w "/workspace/$(PACKAGE)" golangci/golangci-lint:latest golangci-lint run
+
+
+.PHONY: lint-all
+## lint/all: runs linter for all packages
+lint/all:
+	@ docker run -t  --rm -v "`pwd`:/workspace:cached" -w "/workspace/." golangci/golangci-lint:latest golangci-lint run
+
+# ==================================================================================== #
+# OPERATIONS
+# ==================================================================================== #
+
+## push: push changes to the remote Git repository
+.PHONY: push
+push: confirm audit no-dirty
+	git push
+
+## production/deploy: deploy the application to production
+.PHONY: production/deploy
+production/deploy: confirm audit no-dirty
+	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=/tmp/bin/linux_amd64/${binary_name} ${main_package_path}
+	upx -5 /tmp/bin/linux_amd64/${binary_name}
+	# Include additional deployment steps here...
 
 # Prevents Make from treating the arguments as targets
 %:
