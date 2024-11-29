@@ -1,11 +1,14 @@
 package env
 
-import "os"
+import (
+	"os"
+	"testing"
+)
 
 var appEnv string
 
 func init() {
-	if os.Getenv("TESTING") == "1" {
+	if testing.Testing() {
 		appEnv = "test"
 		return
 	}

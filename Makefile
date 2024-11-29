@@ -5,7 +5,6 @@ build:
 run:
 	go run cmd/api/main.go
 test:
-	APP_ENV=test \
 	ginkgo ./...
 db-schema-dump:
 	go run cmd/db_schema_dump/main.go

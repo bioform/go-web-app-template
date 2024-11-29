@@ -44,6 +44,10 @@ func (*ActionError) Error() string {
 	return "authorization failed"
 }
 
+func (e *ActionError) Performer() any {
+	return e.performer
+}
+
 func (*DisabledError) Error() string {
 	return "action is not enabled"
 }
