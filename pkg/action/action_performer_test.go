@@ -51,7 +51,7 @@ var _ = Describe("ActionPerformer", func() {
 
 			ok, err := performer.Perform(ctx)
 			Expect(ok).To(BeTrue())
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("should return error when action is not enabled", func() {
