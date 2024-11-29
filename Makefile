@@ -6,7 +6,7 @@ run:
 	go run cmd/api/main.go
 test:
 	APP_ENV=test \
-	go test -v -race -buildvcs ./... -count=1
+	ginkgo ./...
 db-schema-dump:
 	go run cmd/db_schema_dump/main.go
 db-schema-check:
@@ -17,7 +17,6 @@ db-test-prepare:
 	APP_ENV=test \
 	go run cmd/db_test_prepare/main.go
 migrate-up:
-	go build -o dist/migrate-up cmd/migrate_up/main.go
 	dist/migrate-up
 vet:
 	go vet ./...

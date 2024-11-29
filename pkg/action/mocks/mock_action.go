@@ -24,7 +24,7 @@ func (_m *Action) EXPECT() *Action_Expecter {
 }
 
 // IsAllowed provides a mock function with given fields: _a0
-func (_m *Action) IsAllowed(_a0 context.Context) (bool, action.ErrorMap) {
+func (_m *Action) IsAllowed(_a0 context.Context) (bool, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
@@ -32,8 +32,8 @@ func (_m *Action) IsAllowed(_a0 context.Context) (bool, action.ErrorMap) {
 	}
 
 	var r0 bool
-	var r1 action.ErrorMap
-	if rf, ok := ret.Get(0).(func(context.Context) (bool, action.ErrorMap)); ok {
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
 		return rf(_a0)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
@@ -42,12 +42,10 @@ func (_m *Action) IsAllowed(_a0 context.Context) (bool, action.ErrorMap) {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) action.ErrorMap); ok {
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(_a0)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(action.ErrorMap)
-		}
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1
@@ -71,12 +69,12 @@ func (_c *Action_IsAllowed_Call) Run(run func(_a0 context.Context)) *Action_IsAl
 	return _c
 }
 
-func (_c *Action_IsAllowed_Call) Return(ok bool, errorMap action.ErrorMap) *Action_IsAllowed_Call {
-	_c.Call.Return(ok, errorMap)
+func (_c *Action_IsAllowed_Call) Return(_a0 bool, _a1 error) *Action_IsAllowed_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Action_IsAllowed_Call) RunAndReturn(run func(context.Context) (bool, action.ErrorMap)) *Action_IsAllowed_Call {
+func (_c *Action_IsAllowed_Call) RunAndReturn(run func(context.Context) (bool, error)) *Action_IsAllowed_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -129,8 +127,8 @@ func (_c *Action_IsEnabled_Call) Run(run func(_a0 context.Context)) *Action_IsEn
 	return _c
 }
 
-func (_c *Action_IsEnabled_Call) Return(ok bool, errorMap action.ErrorMap) *Action_IsEnabled_Call {
-	_c.Call.Return(ok, errorMap)
+func (_c *Action_IsEnabled_Call) Return(_a0 bool, _a1 action.ErrorMap) *Action_IsEnabled_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
@@ -187,8 +185,8 @@ func (_c *Action_IsValid_Call) Run(run func(_a0 context.Context)) *Action_IsVali
 	return _c
 }
 
-func (_c *Action_IsValid_Call) Return(ok bool, errorMap action.ErrorMap) *Action_IsValid_Call {
-	_c.Call.Return(ok, errorMap)
+func (_c *Action_IsValid_Call) Return(_a0 bool, _a1 action.ErrorMap) *Action_IsValid_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 

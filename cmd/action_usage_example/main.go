@@ -30,7 +30,7 @@ func main() {
 
 		var validationError *action.ValidationError
 		if errors.As(err, &validationError) {
-			log.Error("Error details", "error", validationError.Errors())
+			log.Error("Error details", "error", validationError.ErrorMap)
 		}
 	}
 }

@@ -18,7 +18,7 @@ func (ba *BaseAction) TransactionProvider() TransactionProvider {
 	return ba.transactionProvider
 }
 
-func (ba *BaseAction) IsAllowed(ctx context.Context) (bool, ErrorMap) {
+func (ba *BaseAction) IsAllowed(ctx context.Context) (bool, error) {
 	// See https://github.com/rezakhademix/govalidator
 	// For example:
 	// v := validator.New()

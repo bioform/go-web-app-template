@@ -8,7 +8,7 @@ type Action interface {
 	SetTransactionProvider(TransactionProvider)
 	TransactionProvider() TransactionProvider
 	Perform(context.Context) error
-	IsAllowed(context.Context) (ok bool, errorMap ErrorMap)
-	IsEnabled(context.Context) (ok bool, errorMap ErrorMap)
-	IsValid(context.Context) (ok bool, errorMap ErrorMap)
+	IsAllowed(context.Context) (bool, error)
+	IsEnabled(context.Context) (bool, ErrorMap)
+	IsValid(context.Context) (bool, ErrorMap)
 }

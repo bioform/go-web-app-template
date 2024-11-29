@@ -31,7 +31,7 @@ var _ = Describe("ActionPerformer", func() {
 		mockTransactionProvider = mocks.NewTransactionProvider(GinkgoT())
 		mockAction.On("TransactionProvider").Return(mockTransactionProvider).Maybe()
 
-		call := mockTransactionProvider.On("Transaction", mock.Anything, mock.Anything)
+		call := mockTransactionProvider.EXPECT().Transaction(mock.Anything, mock.Anything).Maybe()
 		call.Run(func(args mock.Arguments) {
 			ctx := args.Get(0).(context.Context)
 			lambda := args.Get(1).(func(context.Context) error)
@@ -44,6 +44,7 @@ var _ = Describe("ActionPerformer", func() {
 
 	Describe("Perform", func() {
 		It("should perform action successfully", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
 			mockAction.EXPECT().Perform(ctx).Return(nil)
@@ -54,6 +55,7 @@ var _ = Describe("ActionPerformer", func() {
 		})
 
 		It("should return error when action is not enabled", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(false, action.ErrorMap{"error": "action not enabled"})
 
 			ok, err := performer.Perform(ctx)
@@ -62,6 +64,7 @@ var _ = Describe("ActionPerformer", func() {
 		})
 
 		It("should return error when action is not valid", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(false, action.ErrorMap{"error": "action not valid"})
 
@@ -71,6 +74,7 @@ var _ = Describe("ActionPerformer", func() {
 		})
 
 		It("should return error when perform fails", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
 			mockAction.EXPECT().Perform(ctx).Return(errors.New("perform failed"))

@@ -3,11 +3,19 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
-	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestRoutes(t *testing.T) {
-	mux := RegisterRoutes()
+var _ = Describe("Route Tests", func() {
+	var (
+		router http.Handler
+	)
+
+	BeforeEach(func() {
+		router = RegisterRoutes()
+	})
 
 	tests := []struct {
 		method   string
@@ -25,18 +33,15 @@ func TestRoutes(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.method+" "+tt.path, func(t *testing.T) {
+		tt := tt // capture range variable
+		It(tt.method+" "+tt.path, func() {
 			req, err := http.NewRequest(tt.method, tt.path, nil)
-			if err != nil {
-				t.Fatalf("could not create request: %v", err)
-			}
+			Expect(err).NotTo(HaveOccurred())
+
 			rr := httptest.NewRecorder()
+			router.ServeHTTP(rr, req)
 
-			mux.ServeHTTP(rr, req)
-
-			if rr.Code != tt.expected {
-				t.Errorf("expected status %v; got %v for %v %v", tt.expected, rr.Code, tt.method, tt.path)
-			}
+			Expect(rr.Code).To(Equal(tt.expected))
 		})
 	}
-}
+})

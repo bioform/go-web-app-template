@@ -22,3 +22,7 @@ func Get(key, fallback string) string {
 func IsProduction() bool {
 	return App() == "production"
 }
+
+func IsTest() bool {
+	return App() == "test"
+}

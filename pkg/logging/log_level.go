@@ -10,6 +10,8 @@ func logLevel() (slog.Level, error) {
 	var logLevel string
 	if env.IsProduction() {
 		logLevel = env.Get("LOG_LEVEL", "info")
+	} else if env.IsTest() {
+		logLevel = env.Get("LOG_LEVEL", "warn")
 	} else {
 		logLevel = env.Get("LOG_LEVEL", "debug")
 	}

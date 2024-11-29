@@ -1,33 +1,53 @@
 package action
 
-import "fmt"
-
 type ErrorMap map[string]string
 
 type ActionError struct {
-	errs ErrorMap
+	performer any
+}
+
+type AuthorizationError struct {
+	ActionError
 }
 
 type DisabledError struct {
 	ActionError
+	ErrorMap
 }
 
 type ValidationError struct {
 	ActionError
+	ErrorMap
 }
 
-func NewDisabledError(errs ErrorMap) *DisabledError {
-	return &DisabledError{ActionError: ActionError{errs: errs}}
+func NewAuthorizationError(performer any) *AuthorizationError {
+	return &AuthorizationError{
+		ActionError: ActionError{performer: performer},
+	}
 }
 
-func NewValidationError(errs ErrorMap) *ValidationError {
-	return &ValidationError{ActionError: ActionError{errs: errs}}
+func NewDisabledError(performer any, errs ErrorMap) *DisabledError {
+	return &DisabledError{
+		ActionError: ActionError{performer: performer},
+		ErrorMap:    errs,
+	}
 }
 
-func (v *ActionError) Error() string {
-	return fmt.Sprintf("validation failed: %v", v.errs)
+func NewValidationError(performer any, errs ErrorMap) *ValidationError {
+	return &ValidationError{
+		ActionError: ActionError{performer: performer},
+		ErrorMap:    errs,
+	}
 }
 
-func (v *ActionError) Errors() ErrorMap {
-	return v.errs
+func (*ActionError) Error() string {
+	return "authorization failed"
+}
+
+func (*DisabledError) Error() string {
+	return "action is not enabled"
+}
+
+func (*ValidationError) Error() string {
+	return "validation failed"
 }

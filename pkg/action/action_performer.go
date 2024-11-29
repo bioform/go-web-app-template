@@ -6,7 +6,8 @@ import (
 )
 
 type ActionPerformer struct {
-	action Action
+	action    Action
+	performer any
 }
 
 func New(action Action) *ActionPerformer {
@@ -17,6 +18,15 @@ func New(action Action) *ActionPerformer {
 	return &ActionPerformer{
 		action: action,
 	}
+}
+
+// As sets the performer for the action.
+func (ap *ActionPerformer) As(performer any) {
+	ap.performer = performer
+}
+
+func (ap *ActionPerformer) Performer() any {
+	return ap.performer
 }
 
 func (ap *ActionPerformer) Perform(ctx context.Context) (ok bool, err error) {
@@ -47,6 +57,10 @@ func (ap *ActionPerformer) perform(ctx context.Context, allowDisabled bool) (ok 
 	err = provider.Transaction(ctx, func(transactionContext context.Context) error {
 		slog.Debug("Shared logic before perform")
 
+		if ok, err = ap.checkAllowed(transactionContext); !ok || err != nil {
+			return err
+		}
+
 		if ok, err = ap.checkEnabled(transactionContext, allowDisabled); !ok || err != nil {
 			return err
 		}
@@ -67,6 +81,18 @@ func (ap *ActionPerformer) perform(ctx context.Context, allowDisabled bool) (ok 
 	return ok, err
 }
 
+func (ap *ActionPerformer) checkAllowed(ctx context.Context) (bool, error) {
+	ok, err := ap.action.IsAllowed(ctx)
+	if err != nil {
+		return false, err
+
+	}
+	if !ok {
+		return false, NewAuthorizationError(ap.performer)
+	}
+	return true, nil
+}
+
 func (ap *ActionPerformer) checkEnabled(ctx context.Context, allowDisabled bool) (bool, error) {
 	ok, errMap := ap.action.IsEnabled(ctx)
 	if ok {
@@ -75,13 +101,13 @@ func (ap *ActionPerformer) checkEnabled(ctx context.Context, allowDisabled bool)
 	if allowDisabled {
 		return false, nil
 	}
-	return false, NewDisabledError(errMap)
+	return false, NewDisabledError(ap.Performer(), errMap)
 }
 
 func (ap *ActionPerformer) checkValid(ctx context.Context) (bool, error) {
 	ok, errMap := ap.action.IsValid(ctx)
 	if !ok {
-		return false, NewValidationError(errMap)
+		return false, NewValidationError(ap.Performer(), errMap)
 	}
 	return true, nil
 }

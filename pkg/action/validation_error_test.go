@@ -1,7 +1,6 @@
 package action
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -12,13 +11,13 @@ func TestNewValidationError(t *testing.T) {
 		"field2": "error message 2",
 	}
 
-	ve := NewValidationError(errs)
+	ve := NewValidationError(nil, errs)
 	if ve == nil {
 		t.Fatalf("Expected NewValidationError to return a non-nil value")
 	}
 
-	if !reflect.DeepEqual(ve.Errors(), errs) {
-		t.Errorf("Expected Errors() to return %v, got %v", errs, ve.Errors())
+	if !reflect.DeepEqual(ve.ErrorMap, errs) {
+		t.Errorf("Expected Errors() to return %v, got %v", errs, ve.ErrorMap)
 	}
 }
 
@@ -27,8 +26,8 @@ func TestValidationError_Error(t *testing.T) {
 		"field": "error message",
 	}
 
-	ve := NewValidationError(errs)
-	expectedErrMsg := fmt.Sprintf("validation failed: %v", errs)
+	ve := NewValidationError(nil, errs)
+	expectedErrMsg := "validation failed"
 	if ve.Error() != expectedErrMsg {
 		t.Errorf("Expected Error() to return %q, got %q", expectedErrMsg, ve.Error())
 	}
