@@ -27,7 +27,7 @@ no-dirty:
 
 ## audit: run quality control checks
 .PHONY: audit
-audit: test | vet | lint-all
+audit: test vet lint/all
 	go mod tidy -diff
 	go mod verify
 	test -z "$(shell gofmt -l .)"
@@ -55,13 +55,13 @@ tidy:
 
 ## build: build the application
 .PHONY: build
-build: build/migrate/up
+build: build/migration/up
 	go build -o dist/${binary_name} ${main_package_path}
 
 ## build: build the application
-.PHONY: build/migrate/up
-build/migrate/up:
-	go build -o dist/migrate-up cmd/migrate_up/main.go
+.PHONY: build/migration/up
+build/migration/up:
+	go build -o dist/migration-up cmd/migration_up/main.go
 
 ## run: run the API server
 .PHONY: run
@@ -86,10 +86,10 @@ db/schema/dump:
 db/schema/check:
 	go run cmd/db_schema_check/main.go
 
-## db/migrate: run database migrations. Usage: make db/migrate up/down
-.PHONY: db/migrate
-db/migrate:
-	go run cmd/migrate/main.go $(filter-out $@,$(MAKECMDGOALS))
+## db/migration: run database migrations. Usage: make db/migration up/down
+.PHONY: db/migration
+db/migration:
+	go run cmd/migration/main.go $(filter-out $@,$(MAKECMDGOALS))
 
 ## db/test/prepare: prepare the test database. Recreate the test database and run restore from the schema dump
 .PHONY: db/test/prepare
@@ -97,10 +97,10 @@ db/test/prepare:
 	APP_ENV=test \
 	go run cmd/db_test_prepare/main.go
 
-## db/migrate/up: run database migrations from the binary
-.PHONY: db/migrate/up
-db/migrate/up: build/migrate/up
-	dist/migrate-up
+## db/migration/up: run database migrations from the binary
+.PHONY: db/migration/up
+db/migration/up: build/migration/up
+	dist/migration-up
 
 ## vet: run go vet
 .PHONY: vet
@@ -114,7 +114,7 @@ lint:
 	@ docker run -t  --rm -v "`pwd`:/workspace:cached" -w "/workspace/$(PACKAGE)" golangci/golangci-lint:latest golangci-lint run
 
 
-.PHONY: lint-all
+.PHONY: lint/all
 ## lint/all: runs linter for all packages
 lint/all:
 	@ docker run -t  --rm -v "`pwd`:/workspace:cached" -w "/workspace/." golangci/golangci-lint:latest golangci-lint run
@@ -136,5 +136,12 @@ production/deploy: confirm audit no-dirty
 	# Include additional deployment steps here...
 
 # Prevents Make from treating the arguments as targets
+# Allows to run targets with arguments
+TARGETS_WITH_ARGS := db/migration
+
 %:
+	@if ! echo "$(TARGETS_WITH_ARGS)" | grep -qw "$(word 1, $(MAKECMDGOALS))"; then \
+		echo "Error: Unknown target '$@'"; \
+		exit 1; \
+	fi
 	@:

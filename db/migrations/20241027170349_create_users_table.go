@@ -22,13 +22,15 @@ func upAddSomeColumn(ctx context.Context, tx *sql.Tx) error {
 		Email        string `gorm:"unique;not null"`
 		PasswordHash string `gorm:"not null"`
 	}
-
-	err := database.MIGRATOR.CreateTable(&User{})
+	db, err := database.Use(ctx, tx)
 	if err != nil {
 		return err
 	}
 
-	db := database.Get(ctx)
+	err = db.Migrator().CreateTable(&User{})
+	if err != nil {
+		return err
+	}
 
 	hashedPassword, err := crypt.HashPassword("password")
 	if err != nil {

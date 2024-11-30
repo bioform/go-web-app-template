@@ -59,7 +59,7 @@ var _ = Describe("DbProvider", func() {
 				Expect(txDB).NotTo(Equal(db))
 
 				// Verify the transaction is active
-				Expect(txDB.Error).To(BeNil())
+				Expect(txDB.Error).ToNot(HaveOccurred())
 
 				// Rollback the transaction
 				return errors.New("rollback")

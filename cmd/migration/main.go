@@ -41,7 +41,7 @@ func main() {
 
 	command := args[0]
 
-	arguments := []string{"-dir", *dir}
+	arguments := []string{}
 	if len(args) > 1 {
 		arguments = append(arguments, args[1:]...)
 	}

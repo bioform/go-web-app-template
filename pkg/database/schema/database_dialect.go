@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func DatabaseDialect(db *gorm.DB) string {
+func GormDialect(db *gorm.DB) string {
 	if db == nil {
 		return "Unknown"
 	}

@@ -5,13 +5,10 @@ import (
 
 	"github.com/bioform/go-web-app-template/config"
 	"github.com/bioform/go-web-app-template/pkg/action"
-	"gorm.io/gorm"
 )
 
 var (
 	Dsn string // default DB DSN
-
-	MIGRATOR gorm.Migrator
 )
 
 func init() {
@@ -27,6 +24,4 @@ func init() {
 
 	// inject default db provider to action package
 	action.SetTransactionProvider(defaultDbProvider)
-
-	MIGRATOR = db.Migrator()
 }

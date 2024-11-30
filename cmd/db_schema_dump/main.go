@@ -112,7 +112,7 @@ func main() {
 
 	defer database.CloseDefault()
 
-	dbType := dbutil.DatabaseDialect(db)
+	dbType := dbutil.GormDialect(db)
 	// Example configuration: Replace with your actual database details
 	config, err := dbutil.ParseDSN(dbType, database.Dsn)
 	if err != nil {

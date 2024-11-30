@@ -19,7 +19,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)
 	}
-	dialect := schema.DatabaseDialect(gormDB)
+
+	dialect := schema.GormDialect(gormDB)
 	err = goose.SetDialect(dialect)
 	if err != nil {
 		log.Fatalf("failed to set dialect: %v", err)
