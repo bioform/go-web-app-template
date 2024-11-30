@@ -103,7 +103,7 @@ var _ = Describe("ActionPerformer", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("should perform action without error when not enabled but ifEnabled is true", func() {
+		It("should perform action without error when not enabled but nopIfDisabled is true", func() {
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(false, action.ErrorMap{"error": "action not enabled"})
 

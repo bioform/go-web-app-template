@@ -1,26 +1,38 @@
 package middleware
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/bioform/go-web-app-template/pkg/logging"
+	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
 )
 
 func Tracing(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Recover from panics and handle errors
+		defer func() {
+			if err := recover(); err != nil {
+				msg := fmt.Sprintf("tracing middleware panic: %v", err)
+				slog.Error(msg, "error", err)
+
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+
 		start := time.Now()
 
-		ctx := logging.AssignTraceID(r.Context())
-		trace_id := logging.GetTraceID(ctx)
+		ctx := ctxstore.AssignTraceID(r.Context())
+		log := logging.Logger(ctx)
 
 		r = r.WithContext(ctx)
 		defer func() {
-			slog.Debug("Completed request", "time", time.Since(start), "trace_id", trace_id)
+			log.Debug("Completed request", "time", time.Since(start))
 		}()
 
-		slog.Debug("Incomming request", "method", r.Method, "path", r.RequestURI, "remote_addr", r.RemoteAddr, "trace_id", trace_id)
+		log.Debug("Incomming request", "method", r.Method, "path", r.RequestURI, "remote_addr", r.RemoteAddr)
 
 		next.ServeHTTP(w, r)
 	})

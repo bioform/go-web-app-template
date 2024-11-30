@@ -30,7 +30,7 @@ func NewWithError(statusCode int, msg string, err error) error {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("%v", e.Msg)
+	return fmt.Sprintf("%v: %v", e.Msg, e.err)
 }
 
 func (err *Error) Unwrap() error { return err.err }

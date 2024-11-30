@@ -11,7 +11,7 @@ import (
 
 	"github.com/bioform/go-web-app-template/pkg/database"
 	"github.com/bioform/go-web-app-template/pkg/server/rest"
-	"github.com/bioform/go-web-app-template/pkg/server/session"
+	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
 	"gorm.io/gorm"
 )
 
@@ -39,7 +39,7 @@ func (h *helloHandler) handle(w http.ResponseWriter, r *http.Request) error {
 	buf := bytes.NewBufferString("")
 
 	host, _ := os.Hostname()
-	user := session.GetUser(r.Context())
+	user := ctxstore.GetUser(r.Context())
 
 	if user == nil {
 		fmt.Fprintf(buf, "Hello,world!\n")

@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/bioform/go-web-app-template/internal/user/repository"
 	"github.com/bioform/go-web-app-template/pkg/logging"
 	"github.com/bioform/go-web-app-template/pkg/server/session"
+	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
 )
 
 func UserSession(next http.Handler) http.Handler {
@@ -21,14 +21,14 @@ func UserSession(next http.Handler) http.Handler {
 
 			if err == nil {
 				// Add the user to the request context
-				ctx := context.WithValue(ctx, session.UserKey, user)
+				ctx := ctxstore.AssignUser(ctx, user)
 				r = r.WithContext(ctx)
 
-				logger.Info("User loaded from session", "user", user)
+				logging.Logger(ctx).Debug("User loaded from session")
 			} else {
 				// Clear the session if the user can't be found
 				session.Manager.Remove(ctx, session.UserIdKey)
-				logger.Error("Failed to load user from session", "error", err)
+				logger.Error("user session middleware", "error", err)
 			}
 		}
 

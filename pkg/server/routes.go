@@ -28,8 +28,8 @@ func RegisterRoutes() http.Handler {
 
 	handler = middleware.UserSession(handler)
 	handler = session.Manager.LoadAndSave(handler)
-	handler = middleware.Tracing(handler)
 	handler = middleware.Error(handler)
+	handler = middleware.Tracing(handler)
 
 	return handler
 }

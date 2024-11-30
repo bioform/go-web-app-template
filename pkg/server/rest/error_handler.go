@@ -38,6 +38,6 @@ func handleError(w http.ResponseWriter, r *http.Request, statusCode int, err err
 
 	// if the error cause exists, log it
 	if apiErr.Unwrap() != nil {
-		slog.Error("error handling request", "error", apiErr)
+		slog.Error("handle error", "error", apiErr)
 	}
 }

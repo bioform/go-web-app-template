@@ -6,7 +6,6 @@ import (
 
 	"github.com/alexedwards/scs/gormstore"
 	"github.com/alexedwards/scs/v2"
-	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/pkg/database"
 )
 
@@ -29,12 +28,4 @@ func init() {
 	if Manager.Store, err = gormstore.New(db); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func GetUser(ctx context.Context) *model.User {
-	user := ctx.Value(UserKey)
-	if user == nil {
-		return nil
-	}
-	return user.(*model.User)
 }
