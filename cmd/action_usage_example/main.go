@@ -19,12 +19,16 @@ func main() {
 	ctx := context.TODO()
 	log := logging.Logger(ctx)
 
-	a := &MyAction{
-		SomeAttr: "mmm", // not invalid length
-	}
+	// Prepare the performer.
+	performer := &model.User{}
 
-	// Call the template method, which handles the shared logic implicitly.
-	ok, err := action.New(a).Perform(ctx)
+	// Prepare the action.
+	ap := action.New(&MyAction{
+		SomeAttr: "mmm", // Set the action-specific attribute.
+	})
+
+	// Perform the action.
+	ok, err := ap.As(performer).Perform(ctx)
 	if !ok {
 		fmt.Println("Error message: ", err)
 
@@ -32,6 +36,8 @@ func main() {
 		if errors.As(err, &validationError) {
 			log.Error("Error details", "error", validationError.ErrorMap)
 		}
+	} else {
+		log.Info("Action performed successfully", "SomeAttr", ap.Action().SomeAttr)
 	}
 }
 

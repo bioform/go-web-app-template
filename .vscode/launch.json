@@ -13,6 +13,7 @@
     "cwd": "${workspaceFolder}",
     "env": {
       "APP_ENV": "test",
+      "LOG_LEVEL": "debug",
     },
     "program": "${file}",
   },

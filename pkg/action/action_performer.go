@@ -5,53 +5,58 @@ import (
 	"log/slog"
 )
 
-type ActionPerformer struct {
-	action    Action
+type ActionPerformer[A Action] struct {
+	action    A
 	performer any
 }
 
-func New(action Action) *ActionPerformer {
+func New[A Action](action A) *ActionPerformer[A] {
 	if action.TransactionProvider() == nil {
 		action.SetTransactionProvider(transactionProvider)
 	}
 
-	return &ActionPerformer{
+	return &ActionPerformer[A]{
 		action: action,
 	}
 }
 
-// As sets the performer for the action.
-func (ap *ActionPerformer) As(performer any) {
-	ap.performer = performer
+func (ap *ActionPerformer[A]) Action() A {
+	return ap.action
 }
 
-func (ap *ActionPerformer) Performer() any {
+// As sets the performer for the action.
+func (ap *ActionPerformer[A]) As(performer any) *ActionPerformer[A] {
+	ap.performer = performer
+	return ap
+}
+
+func (ap *ActionPerformer[A]) Performer() any {
 	return ap.performer
 }
 
-func (ap *ActionPerformer) Perform(ctx context.Context) (ok bool, err error) {
+func (ap *ActionPerformer[A]) Perform(ctx context.Context) (ok bool, err error) {
 	return ap.perform(ctx, false)
 }
 
-func (ap *ActionPerformer) PerformIfEnabled(ctx context.Context) (ok bool, err error) {
+func (ap *ActionPerformer[A]) PerformIfEnabled(ctx context.Context) (ok bool, err error) {
 	return ap.perform(ctx, true)
 }
 
 // perform executes the action within a transaction context provided by the
 // TransactionProvider. It first checks if the action is enabled and valid
-// before performing it. If the action is disabled and allowDisabled is true,
+// before performing it. If the action is disabled and ifEnabled is true,
 // it will proceed without error.
 //
 // Parameters:
 //   - ctx: The context for the operation, used for managing request-scoped
 //     values (DB reference), cancellation, and deadlines.
-//   - allowDisabled: A boolean flag indicating whether the action should proceed
+//   - ifEnabled: A boolean flag indicating whether the action should proceed
 //     even if it is disabled.
 //
 // Returns:
 //   - ok: A boolean indicating whether the action was successfully performed.
 //   - err: An error if any occurred during the transaction or action execution.
-func (ap *ActionPerformer) perform(ctx context.Context, allowDisabled bool) (ok bool, err error) {
+func (ap *ActionPerformer[A]) perform(ctx context.Context, ifEnabled bool) (ok bool, err error) {
 	provider := ap.action.TransactionProvider()
 
 	err = provider.Transaction(ctx, func(transactionContext context.Context) error {
@@ -61,7 +66,7 @@ func (ap *ActionPerformer) perform(ctx context.Context, allowDisabled bool) (ok 
 			return err
 		}
 
-		if ok, err = ap.checkEnabled(transactionContext, allowDisabled); !ok || err != nil {
+		if ok, err = ap.checkEnabled(transactionContext, ifEnabled); !ok || err != nil {
 			return err
 		}
 
@@ -81,7 +86,7 @@ func (ap *ActionPerformer) perform(ctx context.Context, allowDisabled bool) (ok 
 	return ok, err
 }
 
-func (ap *ActionPerformer) checkAllowed(ctx context.Context) (bool, error) {
+func (ap *ActionPerformer[A]) checkAllowed(ctx context.Context) (bool, error) {
 	ok, err := ap.action.IsAllowed(ctx)
 	if err != nil {
 		return false, err
@@ -93,18 +98,18 @@ func (ap *ActionPerformer) checkAllowed(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (ap *ActionPerformer) checkEnabled(ctx context.Context, allowDisabled bool) (bool, error) {
+func (ap *ActionPerformer[A]) checkEnabled(ctx context.Context, ifEnabled bool) (bool, error) {
 	ok, errMap := ap.action.IsEnabled(ctx)
 	if ok {
 		return true, nil
 	}
-	if allowDisabled {
+	if ifEnabled {
 		return false, nil
 	}
 	return false, NewDisabledError(ap.Performer(), errMap)
 }
 
-func (ap *ActionPerformer) checkValid(ctx context.Context) (bool, error) {
+func (ap *ActionPerformer[A]) checkValid(ctx context.Context) (bool, error) {
 	ok, errMap := ap.action.IsValid(ctx)
 	if !ok {
 		return false, NewValidationError(ap.Performer(), errMap)

@@ -20,7 +20,7 @@ import (
 var _ = Describe("ActionPerformer", func() {
 	var (
 		ctx                     context.Context
-		performer               *action.ActionPerformer
+		performer               *action.ActionPerformer[*mocks.Action]
 		mockAction              *mocks.Action
 		mockTransactionProvider *mocks.TransactionProvider
 	)
@@ -40,6 +40,12 @@ var _ = Describe("ActionPerformer", func() {
 		})
 
 		performer = action.New(mockAction)
+	})
+
+	Describe("Action", func() {
+		It("should return the action", func() {
+			Expect(performer.Action()).To(Equal(mockAction))
+		})
 	})
 
 	Describe("Perform", func() {
@@ -80,6 +86,49 @@ var _ = Describe("ActionPerformer", func() {
 			mockAction.EXPECT().Perform(ctx).Return(errors.New("perform failed"))
 
 			ok, err := performer.Perform(ctx)
+			Expect(ok).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("PerformIfEnabled", func() {
+		It("should perform action successfully when enabled", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
+			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
+			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
+			mockAction.EXPECT().Perform(ctx).Return(nil)
+
+			ok, err := performer.PerformIfEnabled(ctx)
+			Expect(ok).To(BeTrue())
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("should perform action without error when not enabled but ifEnabled is true", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
+			mockAction.EXPECT().IsEnabled(ctx).Return(false, action.ErrorMap{"error": "action not enabled"})
+
+			ok, err := performer.PerformIfEnabled(ctx)
+			Expect(ok).To(BeFalse())
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("should return error when action is not valid", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
+			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
+			mockAction.EXPECT().IsValid(ctx).Return(false, action.ErrorMap{"error": "action not valid"})
+
+			ok, err := performer.PerformIfEnabled(ctx)
+			Expect(ok).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+		})
+
+		It("should return error when perform fails", func() {
+			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
+			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
+			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
+			mockAction.EXPECT().Perform(ctx).Return(errors.New("perform failed"))
+
+			ok, err := performer.PerformIfEnabled(ctx)
 			Expect(ok).To(BeFalse())
 			Expect(err).To(HaveOccurred())
 		})

@@ -38,7 +38,6 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 func (u User) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.Uint64("id", uint64(u.ID)),
-		slog.String("email", u.Email),
 	)
 }
 

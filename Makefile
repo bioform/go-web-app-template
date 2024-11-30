@@ -71,7 +71,7 @@ run: build
 ## run/live: run the application with reloading on file changes
 .PHONY: run/live
 run/live:
-	go run github.com/cosmtrek/air@v1.43.0 \
+	go run github.com/air-verse/air@v1.61.1 \
 		--build.cmd "make build" --build.bin "dist/${binary_name}" --build.delay "100" \
 		--build.exclude_dir "db,dist" \
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico, out" \
