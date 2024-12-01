@@ -2,29 +2,52 @@ package action
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/bioform/go-web-app-template/internal/user/email"
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/internal/user/repository"
+	"github.com/bioform/go-web-app-template/pkg/action"
+	"github.com/bioform/go-web-app-template/pkg/dbaction"
+	validator "github.com/rezakhademix/govalidator/v2"
 )
 
 type RegisterUser struct {
-	repo repository.UserRepository
+	dbaction.BaseAction
+
+	Name     string
+	Email    string
+	Password string
 }
 
-// NewRegisterUser creates a new instance of RegisterUser
-func NewRegisterUser(repo repository.UserRepository) *RegisterUser {
-	return &RegisterUser{repo: repo}
-}
-
-func (s *RegisterUser) Call(ctx context.Context, name, email, password string) error {
-	// Business logic for registering a user
+func (a *RegisterUser) Perform(ctx context.Context) error {
 	newUser := model.User{
-		Name:     name,
-		Email:    email,
-		Password: password,
+		Name:     a.Name,
+		Email:    a.Email,
+		Password: a.Password,
 	}
 
-	_, err := s.repo.Create(ctx, &newUser)
+	repo := repository.NewUserRepository()
+	_, err := repo.Create(ctx, &newUser)
+	if err != nil {
+		return err
+	}
 
-	return err
+	if err = email.SendConfirmationEmail(ctx, newUser); err != nil {
+		return fmt.Errorf("send confirmation email: %w", err)
+	}
+
+	return nil
+}
+
+func (a *RegisterUser) IsValid(ctx context.Context) (bool, action.ErrorMap) {
+	repo := repository.NewUserRepository()
+
+	v := validator.New()
+	v.RequiredString(a.Name, "Name", "required")
+	v.RequiredString(a.Email, "Email", "required")
+	v.Email(a.Email, "Email", "invalid_format")
+	v.RequiredString(a.Password, "Password", "required")
+	v.CustomRule(repo.IsEmailUnique(ctx, a.Email), "Email", "already_taken")
+	return v.IsPassed(), v.Errors()
 }

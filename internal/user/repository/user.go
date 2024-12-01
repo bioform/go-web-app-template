@@ -72,3 +72,24 @@ func (r *userRepositoryImpl) FindByEmailAndPassword(ctx context.Context, email, 
 
 	return user, nil
 }
+
+// Check if the email exists in the database
+func (r *userRepositoryImpl) IsEmailUnique(ctx context.Context, email string) bool {
+
+	db := database.Get(ctx)
+
+	var count int
+
+	err := db.Exec("SELECT COUNT(*) FROM users WHERE email = ?", email).Scan(&count)
+
+	if err != nil {
+
+		// handle error
+
+		return false
+
+	}
+
+	return count == 0
+
+}
