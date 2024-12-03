@@ -1,9 +1,11 @@
 package action
 
+import "fmt"
+
 type ErrorMap map[string]string
 
 type ActionError struct {
-	performer any
+	action Action
 }
 
 type AuthorizationError struct {
@@ -20,44 +22,48 @@ type ValidationError struct {
 	ErrorMap
 }
 
-func NewAuthorizationError(performer any) *AuthorizationError {
+func (e ErrorMap) Error() string {
+	return fmt.Sprintf("%v", map[string]string(e))
+}
+
+func NewAuthorizationError(action Action) *AuthorizationError {
 	err := &AuthorizationError{
-		ActionError: ActionError{performer: performer},
+		ActionError: ActionError{action: action},
 	}
 
 	return err
 }
 
-func NewDisabledError(performer any, errs ErrorMap) *DisabledError {
+func NewDisabledError(action Action, errs ErrorMap) *DisabledError {
 	err := &DisabledError{
-		ActionError: ActionError{performer: performer},
+		ActionError: ActionError{action: action},
 		ErrorMap:    errs,
 	}
 
 	return err
 }
 
-func NewValidationError(performer any, errs ErrorMap) *ValidationError {
+func NewValidationError(action Action, errs ErrorMap) *ValidationError {
 	err := &ValidationError{
-		ActionError: ActionError{performer: performer},
+		ActionError: ActionError{action: action},
 		ErrorMap:    errs,
 	}
 
 	return err
 }
 
-func (*ActionError) Error() string {
-	return "authorization failed"
+func (e ActionError) Error() string {
+	return fmt.Sprintf("performer: %v", e.action.Performer())
 }
 
-func (e *ActionError) Performer() any {
-	return e.performer
+func (e DisabledError) Error() string {
+	return fmt.Sprintf("%s, action is not enabled: %v", e.ActionError, e.ErrorMap)
 }
 
-func (*DisabledError) Error() string {
-	return "action is not enabled"
+func (e ValidationError) Unwrap() []error {
+	return []error{e.ActionError, e.ErrorMap}
 }
 
-func (*ValidationError) Error() string {
-	return "validation failed"
+func (e ValidationError) Error() string {
+	return fmt.Sprintf("%s, validation failed: %v", e.ActionError, e.ErrorMap)
 }

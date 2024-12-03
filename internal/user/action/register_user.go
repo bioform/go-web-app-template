@@ -8,6 +8,7 @@ import (
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/internal/user/repository"
 	"github.com/bioform/go-web-app-template/pkg/action"
+	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/dbaction"
 	validator "github.com/rezakhademix/govalidator/v2"
 )
@@ -27,8 +28,13 @@ func (a *RegisterUser) Perform(ctx context.Context) error {
 		Password: a.Password,
 	}
 
-	repo := repository.NewUserRepository()
-	_, err := repo.Create(ctx, &newUser)
+	api, err := api.From(ctx)
+	if err != nil {
+		return err
+	}
+
+	repo := repository.NewUserRepository(api.DB())
+	_, err = repo.Create(ctx, &newUser)
 	if err != nil {
 		return err
 	}
@@ -40,8 +46,13 @@ func (a *RegisterUser) Perform(ctx context.Context) error {
 	return nil
 }
 
-func (a *RegisterUser) IsValid(ctx context.Context) (bool, action.ErrorMap) {
-	repo := repository.NewUserRepository()
+func (a *RegisterUser) IsValid(ctx context.Context) (bool, error) {
+	api, err := api.From(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	repo := repository.NewUserRepository(api.DB())
 
 	v := validator.New()
 	v.RequiredString(a.Name, "Name", "required")
@@ -49,5 +60,5 @@ func (a *RegisterUser) IsValid(ctx context.Context) (bool, action.ErrorMap) {
 	v.Email(a.Email, "Email", "invalid_format")
 	v.RequiredString(a.Password, "Password", "required")
 	v.CustomRule(repo.IsEmailUnique(ctx, a.Email), "Email", "already_taken")
-	return v.IsPassed(), v.Errors()
+	return v.IsPassed(), action.ErrorMap(v.Errors())
 }

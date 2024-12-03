@@ -2,26 +2,37 @@ package dbaction
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bioform/go-web-app-template/pkg/action"
-	"github.com/bioform/go-web-app-template/pkg/database"
-	"github.com/bioform/go-web-app-template/pkg/logging"
+	"github.com/bioform/go-web-app-template/pkg/api"
 	"gorm.io/gorm"
 )
 
 type BaseAction struct {
 	action.BaseAction
+	api api.API
 }
 
-func (a BaseAction) DB(ctx context.Context) *gorm.DB {
-	actionTransactionProvider := a.TransactionProvider()
+func (ba *BaseAction) SetContext(ctx context.Context) {
+	ba.BaseAction.SetContext(ctx)
 
-	dbProvider, ok := actionTransactionProvider.(*database.DbProvider)
-	if !ok {
-		log := logging.Logger(ctx)
-		log.Error("DB provider is not a *database.DbProvider", "provider", actionTransactionProvider)
-		return nil // or handle the error appropriately
+	api, err := api.From(ctx)
+	if err != nil {
+		panic(fmt.Errorf("set api: %w", err))
 	}
 
-	return dbProvider.DB(ctx)
+	ba.api = api
+}
+
+func (ba *BaseAction) TransactionProvider() action.TransactionProvider {
+	return ba.api
+}
+
+func (ba BaseAction) API() api.API {
+	return ba.api
+}
+
+func (ba BaseAction) DB() (*gorm.DB, error) {
+	return ba.api.DB(), nil
 }

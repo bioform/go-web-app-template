@@ -6,20 +6,24 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/bioform/go-web-app-template/pkg/database/schema"
+	"github.com/bioform/go-web-app-template/pkg/api"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var defaultDbProvider *DbProvider
+var defaultDB *gorm.DB
 
-func Get(ctx context.Context) *gorm.DB {
-	db := defaultDbProvider.DB(ctx)
-	return db.WithContext(ctx)
+func Default() *gorm.DB {
+	return defaultDB
 }
 
 func Use(ctx context.Context, tx *sql.Tx) (db *gorm.DB, err error) {
-	dialect := schema.GormDialect(Get(ctx))
+	api, err := api.From(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	dialect := api.DB().Dialector.Name()
 
 	switch dialect {
 	case "postgres":
@@ -40,19 +44,15 @@ func Use(ctx context.Context, tx *sql.Tx) (db *gorm.DB, err error) {
 	return db.WithContext(ctx), err
 }
 
-func With(ctx context.Context, db *gorm.DB) context.Context {
-	return defaultDbProvider.SetDB(ctx, db)
-}
-
 func CloseDefault() {
-	db, err := Get(context.Background()).DB()
+	db, err := defaultDB.DB()
 	if err != nil {
-		slog.Error("Error getting DB connection", slog.String("db", Dsn), slog.Any("error", err))
+		slog.Error("get sql.DB connection to close", slog.String("db", Dsn), slog.Any("error", err))
 		return
 	}
 
 	if err := db.Close(); err != nil {
-		slog.Error("Error closing DB connection", slog.String("db", Dsn), slog.Any("error", err))
+		slog.Error("close DB connection", slog.String("db", Dsn), slog.Any("error", err))
 	} else {
 		slog.Info("DB connection gracefully closed", slog.String("db", Dsn))
 	}

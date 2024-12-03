@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -104,7 +103,7 @@ func cleanupSchema(schemaContent []byte) string {
 }
 
 func main() {
-	db := database.Get(context.Background())
+	db := database.Default()
 	sqlDb, err := db.DB()
 	if err != nil {
 		log.Fatalf("Failed to get SQL database: %v", err)

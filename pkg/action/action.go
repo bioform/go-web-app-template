@@ -5,10 +5,12 @@ import (
 )
 
 type Action interface {
-	SetTransactionProvider(TransactionProvider)
+	SetContext(context.Context)
+	Context() context.Context
 	TransactionProvider() TransactionProvider
+	Performer() any
 	Perform(context.Context) error
 	IsAllowed(context.Context) (bool, error)
-	IsEnabled(context.Context) (bool, ErrorMap)
-	IsValid(context.Context) (bool, ErrorMap)
+	IsEnabled(context.Context) (bool, error)
+	IsValid(context.Context) (bool, error)
 }

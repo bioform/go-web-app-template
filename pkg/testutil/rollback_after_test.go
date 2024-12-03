@@ -9,7 +9,7 @@ import (
 )
 
 func RollbackAfterTest(ctx context.Context) *gorm.DB {
-	tx := database.Get(ctx).Begin()
+	tx := database.Default().Begin()
 
 	ginkgo.DeferCleanup(tx.Rollback)
 

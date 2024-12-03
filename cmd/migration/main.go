@@ -33,8 +33,7 @@ func main() {
 		return
 	}
 
-	ctx := context.Background()
-	db, err := database.Get(ctx).DB()
+	db, err := database.Default().DB()
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)
 	}
@@ -47,6 +46,8 @@ func main() {
 	}
 
 	fmt.Println("Command: ", command, "Arguments: ", arguments)
+
+	ctx := context.Background()
 
 	if err := goose.RunContext(ctx, command, db, *dir, arguments...); err != nil {
 		log.Fatalf("goose %v: %v", command, err)

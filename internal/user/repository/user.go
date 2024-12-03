@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/bioform/go-web-app-template/internal/user/model"
-	"github.com/bioform/go-web-app-template/pkg/database"
 	"github.com/bioform/go-web-app-template/pkg/util"
 )
 
@@ -19,14 +18,16 @@ type UserRepository interface {
 	FindByEmailAndPassword(ctx context.Context, email, password string) (*model.User, error)
 }
 
-type userRepositoryImpl struct{}
+type userRepositoryImpl struct {
+	db *gorm.DB
+}
 
-func NewUserRepository() *userRepositoryImpl {
-	return &userRepositoryImpl{}
+func NewUserRepository(db *gorm.DB) *userRepositoryImpl {
+	return &userRepositoryImpl{db: db}
 }
 
 func (r *userRepositoryImpl) Create(ctx context.Context, user *model.User) (uint, error) {
-	db := database.Get(ctx)
+	db := r.db
 
 	err := db.Create(user).Error
 	if err != nil {
@@ -39,7 +40,7 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user *model.User) (uint
 }
 
 func (r *userRepositoryImpl) FindByID(ctx context.Context, id uint) (*model.User, error) {
-	db := database.Get(ctx)
+	db := r.db
 	// Logic to retrieve a user by ID from the database
 	user := &model.User{}
 	if err := db.First(user, id).Error; err != nil {
@@ -55,7 +56,7 @@ func (r *userRepositoryImpl) FindByID(ctx context.Context, id uint) (*model.User
 func (r *userRepositoryImpl) FindByEmailAndPassword(ctx context.Context, email, password string) (_ *model.User, err error) {
 	defer util.WrapError(&err, "repository.FindByEmailAndPassword(%q)", email)
 
-	db := database.Get(ctx)
+	db := r.db
 	// Logic to retrieve a user by email from the database
 	user := &model.User{}
 	if err := db.Where("email = ?", email).First(user).Error; err != nil {
@@ -76,7 +77,7 @@ func (r *userRepositoryImpl) FindByEmailAndPassword(ctx context.Context, email, 
 // Check if the email exists in the database
 func (r *userRepositoryImpl) IsEmailUnique(ctx context.Context, email string) bool {
 
-	db := database.Get(ctx)
+	db := r.db
 
 	var count int
 

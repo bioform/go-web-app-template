@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/logging"
 )
 
@@ -32,14 +33,22 @@ func Health(requestContext context.Context) DBHealthStats {
 
 	stats := DBHealthStats{}
 
-	// Ping the database
-	db, err := Get(requestContext).DB()
+	api, err := api.From(requestContext)
 	if err != nil {
 		setDownStatus(&stats, err)
-		log.Error("db down", slog.Any("error", err))
+		log.Error("api down", slog.Any("error", err))
+		return stats
+	}
+
+	// Ping the database
+	db, err := api.DB().DB() // Get the underlying *sql.DB
+	if err != nil {
+		setDownStatus(&stats, err)
+		log.Error("sql db down", slog.Any("error", err))
 
 		return stats
 	}
+
 	err = db.PingContext(ctx)
 	if err != nil {
 		setDownStatus(&stats, err)

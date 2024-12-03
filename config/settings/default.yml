@@ -7,3 +7,12 @@ event:
 kafka:
   bootstrap:
     servers: localhost:9092
+
+email:
+  smtp:
+    host: localhost
+    port: 1025
+    username: your_username
+    password: your_password
+    from: no-reply@go-webapp-template.com
+    tls: true

@@ -107,6 +107,9 @@ db/migration/up: build/migration/up
 vet:
 	go vet ./...
 
+mailhog:
+	docker run -p 1025:1025 -p 8025:8025 --name mailhog mailhog/mailhog
+
 .PHONY: lint
 ## lint: runs linter for a given directory
 lint:

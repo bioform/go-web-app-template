@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/bioform/go-web-app-template/config"
-	"github.com/bioform/go-web-app-template/pkg/action"
 )
 
 var (
@@ -20,8 +19,5 @@ func init() {
 		// another initialization error.
 		log.Panicf("cannot open db(%s): %v", Dsn, err)
 	}
-	defaultDbProvider = &DbProvider{db: db}
-
-	// inject default db provider to action package
-	action.SetTransactionProvider(defaultDbProvider)
+	defaultDB = db
 }

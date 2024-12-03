@@ -17,6 +17,7 @@ type Settings struct {
 	Event    EventConfig      `yaml:"event" json:"event" mapstructure:"event"`
 	Kafka    *kafka.ConfigMap `yaml:"kafka" json:"kafka" mapstructure:"kafka"`
 	Database Database         `yaml:"database" json:"database" mapstructure:"database"`
+	Email    Email            `yaml:"email" json:"email" mapstructure:"email"`
 }
 
 var (

@@ -7,15 +7,19 @@ import (
 
 // Define the base type with the shared template method.
 type BaseAction struct {
-	transactionProvider TransactionProvider
+	ctx context.Context
 }
 
-func (ba *BaseAction) SetTransactionProvider(provider TransactionProvider) {
-	ba.transactionProvider = provider
+func (ba *BaseAction) SetContext(ctx context.Context) {
+	ba.ctx = ctx
 }
 
-func (ba *BaseAction) TransactionProvider() TransactionProvider {
-	return ba.transactionProvider
+func (ba *BaseAction) Context() context.Context {
+	return ba.ctx
+}
+
+func (ba *BaseAction) Performer() any {
+	return nil
 }
 
 func (ba *BaseAction) IsAllowed(ctx context.Context) (bool, error) {
@@ -26,7 +30,7 @@ func (ba *BaseAction) IsAllowed(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (ba *BaseAction) IsEnabled(ctx context.Context) (bool, ErrorMap) {
+func (ba *BaseAction) IsEnabled(ctx context.Context) (bool, error) {
 	// See https://github.com/rezakhademix/govalidator
 	// For example:
 	// v := validator.New()
@@ -34,7 +38,7 @@ func (ba *BaseAction) IsEnabled(ctx context.Context) (bool, ErrorMap) {
 	return true, nil
 }
 
-func (ba *BaseAction) IsValid(ctx context.Context) (bool, ErrorMap) {
+func (ba *BaseAction) IsValid(ctx context.Context) (bool, error) {
 	// See https://github.com/rezakhademix/govalidator
 	// For example:
 	// v := validator.New()

@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/pkg/action"
+	"github.com/bioform/go-web-app-template/pkg/api"
+	"github.com/bioform/go-web-app-template/pkg/database"
 	_ "github.com/bioform/go-web-app-template/pkg/database" // init() in database.go
 	"github.com/bioform/go-web-app-template/pkg/dbaction"
 	validator "github.com/rezakhademix/govalidator/v2"
@@ -16,25 +17,24 @@ import (
 )
 
 func main() {
-	ctx := context.TODO()
+	ctx := api.New(database.Default()).AddTo(context.Background())
+
 	log := logging.Logger(ctx)
 
-	// Prepare the performer.
-	performer := &model.User{}
-
 	// Prepare the action.
-	ap := action.New(&MyAction{
-		SomeAttr: "mmm", // Set the action-specific attribute.
+	ap := action.New(ctx, &MyAction{
+		SomeAttr: "", // Set the action-specific attribute.
 	})
 
 	// Perform the action.
-	ok, err := ap.As(performer).Perform(ctx)
+	ok, err := ap.Perform(ctx)
 	if !ok {
-		fmt.Println("Error message: ", err)
 
-		var validationError *action.ValidationError
-		if errors.As(err, &validationError) {
-			log.Error("Error details", "error", validationError.ErrorMap)
+		var actionError action.ActionError
+		if errors.As(err, &actionError) {
+			log.Error("Action error", "error", err)
+		} else {
+			log.Error("Error", "error", err)
 		}
 	} else {
 		log.Info("Action performed successfully", "SomeAttr", ap.Action().SomeAttr)
@@ -56,12 +56,16 @@ type MyAction struct {
 func (a *MyAction) Perform(ctx context.Context) error {
 	// Put your business logic here.
 	log := logging.Logger(ctx)
-	db := a.DB(ctx)
+	api, err := api.From(ctx)
+	if err != nil {
+		return err
+	}
+	db := api.DB()
 
 	log.Info("MyAction-specific perform logic")
 
 	user := &model.User{Name: "L1212", Email: "mmm@example.com", Password: "123456"}
-	err := db.Create(user).Error
+	err = db.Create(user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return &model.EmailDuplicateError{Email: user.Email}
@@ -76,8 +80,8 @@ func (a *MyAction) Perform(ctx context.Context) error {
 	return nil
 }
 
-func (a *MyAction) IsValid(ctx context.Context) (bool, action.ErrorMap) {
+func (a *MyAction) IsValid(ctx context.Context) (bool, error) {
 	v := validator.New()
 	v.RequiredString(a.SomeAttr, "SomeAttr", "required")
-	return v.IsPassed(), v.Errors()
+	return v.IsPassed(), action.ErrorMap(v.Errors())
 }

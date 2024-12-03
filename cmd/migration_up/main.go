@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	migration "github.com/bioform/go-web-app-template/db"
@@ -12,9 +11,7 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-
-	gormDB := database.Get(ctx)
+	gormDB := database.Default()
 	db, err := gormDB.DB()
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)

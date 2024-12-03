@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/bioform/go-web-app-template/internal/user/repository"
+	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/logging"
 	"github.com/bioform/go-web-app-template/pkg/server/session"
 	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
@@ -16,7 +17,16 @@ func UserSession(next http.Handler) http.Handler {
 
 		if userID != 0 {
 			logger := logging.Logger(ctx)
-			repo := repository.NewUserRepository()
+
+			api, err := api.From(ctx)
+			if err != nil {
+				logger.Error("user session middleware", "error", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			db := api.DB()
+			repo := repository.NewUserRepository(db)
 			user, err := repo.FindByID(ctx, uint(userID))
 
 			if err == nil {

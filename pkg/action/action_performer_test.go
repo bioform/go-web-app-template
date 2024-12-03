@@ -12,11 +12,6 @@ import (
 	"github.com/bioform/go-web-app-template/pkg/action/mocks"
 )
 
-// func TestActionPerformer(t *testing.T) {
-// 	RegisterFailHandler(Fail)
-// 	RunSpecs(t, "ActionPerformer Suite")
-// }
-
 var _ = Describe("ActionPerformer", func() {
 	var (
 		ctx                     context.Context
@@ -29,8 +24,12 @@ var _ = Describe("ActionPerformer", func() {
 		ctx = context.Background()
 		mockAction = mocks.NewAction(GinkgoT())
 		mockTransactionProvider = mocks.NewTransactionProvider(GinkgoT())
-		mockAction.On("TransactionProvider").Return(mockTransactionProvider).Maybe()
 
+		// Mock SetContext and TransactionProvider
+		mockAction.EXPECT().SetContext(ctx).Maybe()
+		mockAction.EXPECT().TransactionProvider().Return(mockTransactionProvider).Maybe()
+
+		// Mock the transaction
 		call := mockTransactionProvider.EXPECT().Transaction(mock.Anything, mock.Anything).Maybe()
 		call.Run(func(args mock.Arguments) {
 			ctx := args.Get(0).(context.Context)
@@ -39,7 +38,8 @@ var _ = Describe("ActionPerformer", func() {
 			call.Return(err)
 		})
 
-		performer = action.New(mockAction)
+		// Update the New function call to include the context
+		performer = action.New(ctx, mockAction)
 	})
 
 	Describe("Action", func() {
@@ -50,6 +50,8 @@ var _ = Describe("ActionPerformer", func() {
 
 	Describe("Perform", func() {
 		It("should perform action successfully", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
@@ -60,16 +62,33 @@ var _ = Describe("ActionPerformer", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("should return error when action is not allowed", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
+			mockAction.EXPECT().IsAllowed(ctx).Return(false, nil)
+			//mockAction.EXPECT().Performer().Return("TestPerformer")
+
+			ok, err := performer.Perform(ctx)
+			Expect(ok).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(BeAssignableToTypeOf(&action.AuthorizationError{}))
+		})
+
 		It("should return error when action is not enabled", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(false, action.ErrorMap{"error": "action not enabled"})
 
 			ok, err := performer.Perform(ctx)
 			Expect(ok).To(BeFalse())
 			Expect(err).To(HaveOccurred())
+			Expect(err).To(BeAssignableToTypeOf(&action.DisabledError{}))
 		})
 
 		It("should return error when action is not valid", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(false, action.ErrorMap{"error": "action not valid"})
@@ -77,9 +96,12 @@ var _ = Describe("ActionPerformer", func() {
 			ok, err := performer.Perform(ctx)
 			Expect(ok).To(BeFalse())
 			Expect(err).To(HaveOccurred())
+			Expect(err).To(BeAssignableToTypeOf(&action.ValidationError{}))
 		})
 
 		It("should return error when perform fails", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
@@ -93,6 +115,8 @@ var _ = Describe("ActionPerformer", func() {
 
 	Describe("PerformIfEnabled", func() {
 		It("should perform action successfully when enabled", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(true, nil)
@@ -103,7 +127,9 @@ var _ = Describe("ActionPerformer", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("should perform action without error when not enabled but nopIfDisabled is true", func() {
+		It("should skip action without error when not enabled", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(false, action.ErrorMap{"error": "action not enabled"})
 
@@ -113,6 +139,8 @@ var _ = Describe("ActionPerformer", func() {
 		})
 
 		It("should return error when action is not valid", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(false, action.ErrorMap{"error": "action not valid"})
@@ -120,9 +148,12 @@ var _ = Describe("ActionPerformer", func() {
 			ok, err := performer.PerformIfEnabled(ctx)
 			Expect(ok).To(BeFalse())
 			Expect(err).To(HaveOccurred())
+			Expect(err).To(BeAssignableToTypeOf(&action.ValidationError{}))
 		})
 
 		It("should return error when perform fails", func() {
+			mockAction.EXPECT().Context().Return(ctx)
+
 			mockAction.EXPECT().IsAllowed(ctx).Return(true, nil)
 			mockAction.EXPECT().IsEnabled(ctx).Return(true, nil)
 			mockAction.EXPECT().IsValid(ctx).Return(true, nil)

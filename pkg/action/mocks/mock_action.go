@@ -23,6 +23,53 @@ func (_m *Action) EXPECT() *Action_Expecter {
 	return &Action_Expecter{mock: &_m.Mock}
 }
 
+// Context provides a mock function with given fields:
+func (_m *Action) Context() context.Context {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Context")
+	}
+
+	var r0 context.Context
+	if rf, ok := ret.Get(0).(func() context.Context); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(context.Context)
+		}
+	}
+
+	return r0
+}
+
+// Action_Context_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Context'
+type Action_Context_Call struct {
+	*mock.Call
+}
+
+// Context is a helper method to define mock.On call
+func (_e *Action_Expecter) Context() *Action_Context_Call {
+	return &Action_Context_Call{Call: _e.mock.On("Context")}
+}
+
+func (_c *Action_Context_Call) Run(run func()) *Action_Context_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *Action_Context_Call) Return(_a0 context.Context) *Action_Context_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Action_Context_Call) RunAndReturn(run func() context.Context) *Action_Context_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // IsAllowed provides a mock function with given fields: _a0
 func (_m *Action) IsAllowed(_a0 context.Context) (bool, error) {
 	ret := _m.Called(_a0)
@@ -80,7 +127,7 @@ func (_c *Action_IsAllowed_Call) RunAndReturn(run func(context.Context) (bool, e
 }
 
 // IsEnabled provides a mock function with given fields: _a0
-func (_m *Action) IsEnabled(_a0 context.Context) (bool, action.ErrorMap) {
+func (_m *Action) IsEnabled(_a0 context.Context) (bool, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
@@ -88,8 +135,8 @@ func (_m *Action) IsEnabled(_a0 context.Context) (bool, action.ErrorMap) {
 	}
 
 	var r0 bool
-	var r1 action.ErrorMap
-	if rf, ok := ret.Get(0).(func(context.Context) (bool, action.ErrorMap)); ok {
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
 		return rf(_a0)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
@@ -98,12 +145,10 @@ func (_m *Action) IsEnabled(_a0 context.Context) (bool, action.ErrorMap) {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) action.ErrorMap); ok {
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(_a0)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(action.ErrorMap)
-		}
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1
@@ -127,18 +172,18 @@ func (_c *Action_IsEnabled_Call) Run(run func(_a0 context.Context)) *Action_IsEn
 	return _c
 }
 
-func (_c *Action_IsEnabled_Call) Return(_a0 bool, _a1 action.ErrorMap) *Action_IsEnabled_Call {
+func (_c *Action_IsEnabled_Call) Return(_a0 bool, _a1 error) *Action_IsEnabled_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Action_IsEnabled_Call) RunAndReturn(run func(context.Context) (bool, action.ErrorMap)) *Action_IsEnabled_Call {
+func (_c *Action_IsEnabled_Call) RunAndReturn(run func(context.Context) (bool, error)) *Action_IsEnabled_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // IsValid provides a mock function with given fields: _a0
-func (_m *Action) IsValid(_a0 context.Context) (bool, action.ErrorMap) {
+func (_m *Action) IsValid(_a0 context.Context) (bool, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
@@ -146,8 +191,8 @@ func (_m *Action) IsValid(_a0 context.Context) (bool, action.ErrorMap) {
 	}
 
 	var r0 bool
-	var r1 action.ErrorMap
-	if rf, ok := ret.Get(0).(func(context.Context) (bool, action.ErrorMap)); ok {
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
 		return rf(_a0)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
@@ -156,12 +201,10 @@ func (_m *Action) IsValid(_a0 context.Context) (bool, action.ErrorMap) {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) action.ErrorMap); ok {
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(_a0)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(action.ErrorMap)
-		}
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1
@@ -185,12 +228,12 @@ func (_c *Action_IsValid_Call) Run(run func(_a0 context.Context)) *Action_IsVali
 	return _c
 }
 
-func (_c *Action_IsValid_Call) Return(_a0 bool, _a1 action.ErrorMap) *Action_IsValid_Call {
+func (_c *Action_IsValid_Call) Return(_a0 bool, _a1 error) *Action_IsValid_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Action_IsValid_Call) RunAndReturn(run func(context.Context) (bool, action.ErrorMap)) *Action_IsValid_Call {
+func (_c *Action_IsValid_Call) RunAndReturn(run func(context.Context) (bool, error)) *Action_IsValid_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -241,35 +284,82 @@ func (_c *Action_Perform_Call) RunAndReturn(run func(context.Context) error) *Ac
 	return _c
 }
 
-// SetTransactionProvider provides a mock function with given fields: _a0
-func (_m *Action) SetTransactionProvider(_a0 action.TransactionProvider) {
-	_m.Called(_a0)
+// Performer provides a mock function with given fields:
+func (_m *Action) Performer() any {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Performer")
+	}
+
+	var r0 any
+	if rf, ok := ret.Get(0).(func() any); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(any)
+		}
+	}
+
+	return r0
 }
 
-// Action_SetTransactionProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetTransactionProvider'
-type Action_SetTransactionProvider_Call struct {
+// Action_Performer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Performer'
+type Action_Performer_Call struct {
 	*mock.Call
 }
 
-// SetTransactionProvider is a helper method to define mock.On call
-//   - _a0 action.TransactionProvider
-func (_e *Action_Expecter) SetTransactionProvider(_a0 interface{}) *Action_SetTransactionProvider_Call {
-	return &Action_SetTransactionProvider_Call{Call: _e.mock.On("SetTransactionProvider", _a0)}
+// Performer is a helper method to define mock.On call
+func (_e *Action_Expecter) Performer() *Action_Performer_Call {
+	return &Action_Performer_Call{Call: _e.mock.On("Performer")}
 }
 
-func (_c *Action_SetTransactionProvider_Call) Run(run func(_a0 action.TransactionProvider)) *Action_SetTransactionProvider_Call {
+func (_c *Action_Performer_Call) Run(run func()) *Action_Performer_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(action.TransactionProvider))
+		run()
 	})
 	return _c
 }
 
-func (_c *Action_SetTransactionProvider_Call) Return() *Action_SetTransactionProvider_Call {
+func (_c *Action_Performer_Call) Return(_a0 any) *Action_Performer_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Action_Performer_Call) RunAndReturn(run func() any) *Action_Performer_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetContext provides a mock function with given fields: _a0
+func (_m *Action) SetContext(_a0 context.Context) {
+	_m.Called(_a0)
+}
+
+// Action_SetContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetContext'
+type Action_SetContext_Call struct {
+	*mock.Call
+}
+
+// SetContext is a helper method to define mock.On call
+//   - _a0 context.Context
+func (_e *Action_Expecter) SetContext(_a0 interface{}) *Action_SetContext_Call {
+	return &Action_SetContext_Call{Call: _e.mock.On("SetContext", _a0)}
+}
+
+func (_c *Action_SetContext_Call) Run(run func(_a0 context.Context)) *Action_SetContext_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Action_SetContext_Call) Return() *Action_SetContext_Call {
 	_c.Call.Return()
 	return _c
 }
 
-func (_c *Action_SetTransactionProvider_Call) RunAndReturn(run func(action.TransactionProvider)) *Action_SetTransactionProvider_Call {
+func (_c *Action_SetContext_Call) RunAndReturn(run func(context.Context)) *Action_SetContext_Call {
 	_c.Call.Return(run)
 	return _c
 }

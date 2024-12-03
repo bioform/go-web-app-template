@@ -27,6 +27,7 @@ func RegisterRoutes() http.Handler {
 	var handler http.Handler = mux
 
 	handler = middleware.UserSession(handler)
+	handler = middleware.ApiProvider(handler)
 	handler = session.Manager.LoadAndSave(handler)
 	handler = middleware.Error(handler)
 	handler = middleware.Tracing(handler)

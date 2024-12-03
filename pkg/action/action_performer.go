@@ -6,14 +6,11 @@ import (
 )
 
 type ActionPerformer[A Action] struct {
-	action    A
-	performer any
+	action A
 }
 
-func New[A Action](action A) *ActionPerformer[A] {
-	if action.TransactionProvider() == nil {
-		action.SetTransactionProvider(transactionProvider)
-	}
+func New[A Action](ctx context.Context, action A) *ActionPerformer[A] {
+	action.SetContext(ctx)
 
 	return &ActionPerformer[A]{
 		action: action,
@@ -22,16 +19,6 @@ func New[A Action](action A) *ActionPerformer[A] {
 
 func (ap *ActionPerformer[A]) Action() A {
 	return ap.action
-}
-
-// As sets the performer for the action.
-func (ap *ActionPerformer[A]) As(performer any) *ActionPerformer[A] {
-	ap.performer = performer
-	return ap
-}
-
-func (ap *ActionPerformer[A]) Performer() any {
-	return ap.performer
 }
 
 func (ap *ActionPerformer[A]) Perform(ctx context.Context) (ok bool, err error) {
@@ -57,10 +44,12 @@ func (ap *ActionPerformer[A]) PerformIfEnabled(ctx context.Context) (ok bool, er
 //   - ok: A boolean indicating whether the action was successfully performed.
 //   - err: An error if any occurred during the transaction or action execution.
 func (ap *ActionPerformer[A]) perform(ctx context.Context, nopIfDisabled bool) (ok bool, err error) {
-	provider := ap.action.TransactionProvider()
+	tp := ap.action.TransactionProvider()
 
-	err = provider.Transaction(ctx, func(transactionContext context.Context) error {
-		slog.Debug("Shared logic before perform")
+	err = tp.Transaction(ctx, func(transactionContext context.Context) error {
+		defer ap.action.SetContext(ap.action.Context())
+
+		ap.action.SetContext(transactionContext)
 
 		if ok, err = ap.checkAllowed(transactionContext); !ok || err != nil {
 			return err
@@ -93,26 +82,36 @@ func (ap *ActionPerformer[A]) checkAllowed(ctx context.Context) (bool, error) {
 
 	}
 	if !ok {
-		return false, NewAuthorizationError(ap.performer)
+		return false, NewAuthorizationError(ap.action)
 	}
 	return true, nil
 }
 
 func (ap *ActionPerformer[A]) checkEnabled(ctx context.Context, nopIfDisabled bool) (bool, error) {
-	ok, errMap := ap.action.IsEnabled(ctx)
+	ok, err := ap.action.IsEnabled(ctx)
 	if ok {
 		return true, nil
 	}
+
+	errMap, ok := err.(ErrorMap)
+	if !ok {
+		return false, err
+	}
+
 	if nopIfDisabled {
 		return false, nil
 	}
-	return false, NewDisabledError(ap.Performer(), errMap)
+	return false, NewDisabledError(ap.action, ErrorMap(errMap))
 }
 
 func (ap *ActionPerformer[A]) checkValid(ctx context.Context) (bool, error) {
-	ok, errMap := ap.action.IsValid(ctx)
+	ok, err := ap.action.IsValid(ctx)
 	if !ok {
-		return false, NewValidationError(ap.Performer(), errMap)
+		errMap, ok := err.(ErrorMap)
+		if !ok {
+			return false, err
+		}
+		return false, NewValidationError(ap.action, errMap)
 	}
 	return true, nil
 }

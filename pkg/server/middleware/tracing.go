@@ -27,13 +27,26 @@ func Tracing(next http.Handler) http.Handler {
 		ctx := ctxstore.AssignTraceID(r.Context())
 		log := logging.Logger(ctx)
 
+		wrappedWriter := &ResponseWriterWrapper{ResponseWriter: w, StatusCode: http.StatusOK}
 		r = r.WithContext(ctx)
 		defer func() {
-			log.Debug("Completed request", "time", time.Since(start))
+			log.Debug("Completed request", "time", time.Since(start), "status", wrappedWriter.StatusCode)
 		}()
 
 		log.Debug("Incomming request", "method", r.Method, "path", r.RequestURI, "remote_addr", r.RemoteAddr)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(wrappedWriter, r)
 	})
+}
+
+// ResponseWriterWrapper wraps http.ResponseWriter to capture the status code.
+type ResponseWriterWrapper struct {
+	http.ResponseWriter
+	StatusCode int
+}
+
+// WriteHeader overrides the default WriteHeader to capture the status code.
+func (rw *ResponseWriterWrapper) WriteHeader(code int) {
+	rw.StatusCode = code
+	rw.ResponseWriter.WriteHeader(code)
 }

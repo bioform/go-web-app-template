@@ -15,6 +15,7 @@ func init() {
 			BearerFormat: "JWT",
 		},
 	}
+	config.Servers = []*huma.Server{{URL: ""}}
 }
 
 func New(mux humago.Mux) huma.API {

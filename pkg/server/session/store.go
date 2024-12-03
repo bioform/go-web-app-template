@@ -1,7 +1,6 @@
 package session
 
 import (
-	"context"
 	"log"
 
 	"github.com/alexedwards/scs/gormstore"
@@ -19,7 +18,7 @@ const (
 )
 
 func init() {
-	db := database.Get(context.Background())
+	db := database.Default()
 	var err error
 
 	Manager = scs.New()

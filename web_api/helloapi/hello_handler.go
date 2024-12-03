@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/bioform/go-web-app-template/pkg/database"
+	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/server/rest"
 	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
 	"gorm.io/gorm"
@@ -29,8 +29,12 @@ type helloHandler struct {
 }
 
 func newHelloHandler(ctx context.Context) *helloHandler {
+	api, err := api.From(ctx)
+	if err != nil {
+		log.Fatalf("error getting API from context. Err: %v", err)
+	}
 	return &helloHandler{
-		db: database.Get(ctx),
+		db: api.DB(),
 	}
 }
 
