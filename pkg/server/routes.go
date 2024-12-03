@@ -16,11 +16,11 @@ import (
 func RegisterRoutes() http.Handler {
 
 	mux := http.NewServeMux()
-	api := api.New(mux)
+	api := api.NewWithPrefix(mux, "/api")
 
 	mux.Handle("GET /{$}", helloapi.HelloHandler())
 
-	mux.Handle("/auth/", authapi.RegisterRoutes("/auth"))
+	authapi.RegisterRoutes(api, "/auth")
 
 	huma.Get(api, "/health", healthapi.HealthHandler)
 

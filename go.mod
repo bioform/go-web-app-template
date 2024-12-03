@@ -4,6 +4,7 @@ go 1.23.3
 
 require (
 	github.com/lmittmann/tint v1.0.5
+	github.com/mocktools/go-smtp-mock/v2 v2.4.0
 	github.com/pressly/goose/v3 v3.23.0
 	github.com/wneessen/go-mail v0.5.2
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f

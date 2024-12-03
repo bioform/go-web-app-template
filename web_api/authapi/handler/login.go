@@ -12,7 +12,7 @@ import (
 type LoginInput struct {
 	Body struct {
 		Email    string `json:"email" maxLength:"255" example:"username@example.com"`
-		Password string `json:"password" maxLength:"255" example:"complex_password"`
+		Password string `json:"password" maxLength:"255" example:"password"`
 	}
 }
 

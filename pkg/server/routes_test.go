@@ -23,10 +23,10 @@ var _ = Describe("Route Tests", func() {
 		expected int
 	}{
 		{"GET", "/", http.StatusOK},
-		{"GET", "/health", http.StatusOK},
+		{"GET", "/api/health", http.StatusOK}, // it should be `http.StatusOK`, but SMTP server is not running
 		{"POST", "/", http.StatusMethodNotAllowed},
 		{"GET", "/nonexistent", http.StatusNotFound},
-		{"POST", "/health", http.StatusMethodNotAllowed},
+		{"POST", "/api/health", http.StatusMethodNotAllowed},
 		{"PUT", "/", http.StatusMethodNotAllowed},
 		{"DELETE", "/", http.StatusMethodNotAllowed},
 		{"GET", "/anothernonexistent", http.StatusNotFound},

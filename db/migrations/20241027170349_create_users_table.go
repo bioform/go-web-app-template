@@ -36,7 +36,7 @@ func upAddSomeColumn(ctx context.Context, tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	_ = db.Create(&User{Name: "admin", Email: "admin@example.com", PasswordHash: hashedPassword})
+	_ = db.Create(&User{Name: "admin", Email: "username@example.com", PasswordHash: hashedPassword})
 
 	return err
 }

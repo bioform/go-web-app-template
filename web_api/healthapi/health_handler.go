@@ -38,12 +38,14 @@ func HealthHandler(ctx context.Context, _ *struct{}) (*HealthOutput, error) {
 				smtpHealth := map[string]string{
 					"status": "down",
 				}
-				client, err := mail.NewClient("smtp.example.com",
-					mail.WithPort(587),
-					mail.WithSMTPAuth(mail.SMTPAuthPlain),
+				client, err := mail.NewClient("localhost",
+					mail.WithPort(45939),
+					// mail.WithSMTPAuth(mail.SMTPAuthPlain), // for production environment
 					mail.WithUsername("your_email@example.com"),
 					mail.WithPassword("your_password"),
-					mail.WithTLSPolicy(mail.TLSMandatory),
+					mail.WithTLSPolicy(mail.NoTLS), // for test environment
+					// mail.WithTLSPolicy(mail.TLSMandatory), // for production environment
+					mail.WithHELO("localhost"), // for test environment
 				)
 				if err == nil {
 					if err := client.DialAndSendWithContext(ctx); err == nil {
@@ -93,11 +95,8 @@ func extractStatus(data interface{}) string {
 		if s, ok := v["status"].(string); ok {
 			return s
 		}
-	default:
-		// Assuming dbHealth has a Status field
-		if dbHealth, ok := v.(interface{ GetStatus() string }); ok {
-			return dbHealth.GetStatus()
-		}
+	case database.DBHealthStats:
+		return v.Status
 	}
 	return "unknown"
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/bioform/go-web-app-template/pkg/api"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -18,12 +17,9 @@ func Default() *gorm.DB {
 }
 
 func Use(ctx context.Context, tx *sql.Tx) (db *gorm.DB, err error) {
-	api, err := api.From(ctx)
-	if err != nil {
-		return nil, err
-	}
+	db = Default()
 
-	dialect := api.DB().Dialector.Name()
+	dialect := db.Dialector.Name()
 
 	switch dialect {
 	case "postgres":
@@ -45,7 +41,7 @@ func Use(ctx context.Context, tx *sql.Tx) (db *gorm.DB, err error) {
 }
 
 func CloseDefault() {
-	db, err := defaultDB.DB()
+	db, err := Default().DB()
 	if err != nil {
 		slog.Error("get sql.DB connection to close", slog.String("db", Dsn), slog.Any("error", err))
 		return
