@@ -5,7 +5,9 @@ import (
 	"log"
 	"testing"
 
+	"github.com/bioform/go-web-app-template/config"
 	"github.com/bioform/go-web-app-template/pkg/logging"
+	"github.com/bioform/go-web-app-template/pkg/mail"
 	smtpmock "github.com/mocktools/go-smtp-mock/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -18,9 +20,10 @@ func TestServer(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	smtp := config.App.Email.Smtp
 	// You can pass empty smtpmock.ConfigurationAttr{}. It means that smtpmock will use default settings
 	server := smtpmock.New(smtpmock.ConfigurationAttr{
-		PortNumber:        45939,
+		PortNumber:        smtp.Port,
 		LogToStdout:       true,
 		LogServerActivity: true,
 	})
@@ -38,4 +41,5 @@ var _ = BeforeSuite(func() {
 	log.Printf("SMTP server started on %s", address)
 
 	DeferCleanup(server.Stop)
+	DeferCleanup(mail.Client().Close)
 })

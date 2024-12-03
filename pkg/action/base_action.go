@@ -22,7 +22,7 @@ func (ba *BaseAction) Performer() any {
 	return nil
 }
 
-func (ba *BaseAction) IsAllowed(ctx context.Context) (bool, error) {
+func (ba *BaseAction) IsAllowed() (bool, error) {
 	// See https://github.com/rezakhademix/govalidator
 	// For example:
 	// v := validator.New()
@@ -30,7 +30,7 @@ func (ba *BaseAction) IsAllowed(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (ba *BaseAction) IsEnabled(ctx context.Context) (bool, error) {
+func (ba *BaseAction) IsEnabled() (bool, error) {
 	// See https://github.com/rezakhademix/govalidator
 	// For example:
 	// v := validator.New()

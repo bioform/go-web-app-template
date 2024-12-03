@@ -2,7 +2,6 @@ package action
 
 import (
 	"context"
-	"log/slog"
 )
 
 type ActionPerformer[A Action] struct {
@@ -21,12 +20,12 @@ func (ap *ActionPerformer[A]) Action() A {
 	return ap.action
 }
 
-func (ap *ActionPerformer[A]) Perform(ctx context.Context) (ok bool, err error) {
-	return ap.perform(ctx, false)
+func (ap *ActionPerformer[A]) Perform() (ok bool, err error) {
+	return ap.perform(false)
 }
 
-func (ap *ActionPerformer[A]) PerformIfEnabled(ctx context.Context) (ok bool, err error) {
-	return ap.perform(ctx, true)
+func (ap *ActionPerformer[A]) PerformIfEnabled() (ok bool, err error) {
+	return ap.perform(true)
 }
 
 // perform executes the action within a transaction context provided by the
@@ -43,40 +42,39 @@ func (ap *ActionPerformer[A]) PerformIfEnabled(ctx context.Context) (ok bool, er
 // Returns:
 //   - ok: A boolean indicating whether the action was successfully performed.
 //   - err: An error if any occurred during the transaction or action execution.
-func (ap *ActionPerformer[A]) perform(ctx context.Context, nopIfDisabled bool) (ok bool, err error) {
+func (ap *ActionPerformer[A]) perform(nopIfDisabled bool) (ok bool, err error) {
 	tp := ap.action.TransactionProvider()
+	ctx := ap.action.Context()
 
 	err = tp.Transaction(ctx, func(transactionContext context.Context) error {
-		defer ap.action.SetContext(ap.action.Context())
-
 		ap.action.SetContext(transactionContext)
+		defer ap.action.SetContext(ctx)
 
-		if ok, err = ap.checkAllowed(transactionContext); !ok || err != nil {
+		if ok, err = ap.checkAllowed(); !ok || err != nil {
 			return err
 		}
 
-		if ok, err = ap.checkEnabled(transactionContext, nopIfDisabled); !ok || err != nil {
+		if ok, err = ap.checkEnabled(nopIfDisabled); !ok || err != nil {
 			return err
 		}
 
-		if ok, err = ap.checkValid(transactionContext); !ok || err != nil {
+		if ok, err = ap.checkValid(); !ok || err != nil {
 			return err
 		}
 
-		if err = ap.action.Perform(transactionContext); err != nil {
+		if err = ap.action.Perform(); err != nil {
 			ok = false
 			return err
 		}
 
-		slog.Debug("Shared logic after perform")
 		return nil
 	})
 
 	return ok, err
 }
 
-func (ap *ActionPerformer[A]) checkAllowed(ctx context.Context) (bool, error) {
-	ok, err := ap.action.IsAllowed(ctx)
+func (ap *ActionPerformer[A]) checkAllowed() (bool, error) {
+	ok, err := ap.action.IsAllowed()
 	if err != nil {
 		return false, err
 
@@ -87,8 +85,8 @@ func (ap *ActionPerformer[A]) checkAllowed(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (ap *ActionPerformer[A]) checkEnabled(ctx context.Context, nopIfDisabled bool) (bool, error) {
-	ok, err := ap.action.IsEnabled(ctx)
+func (ap *ActionPerformer[A]) checkEnabled(nopIfDisabled bool) (bool, error) {
+	ok, err := ap.action.IsEnabled()
 	if ok {
 		return true, nil
 	}
@@ -104,8 +102,8 @@ func (ap *ActionPerformer[A]) checkEnabled(ctx context.Context, nopIfDisabled bo
 	return false, NewDisabledError(ap.action, ErrorMap(errMap))
 }
 
-func (ap *ActionPerformer[A]) checkValid(ctx context.Context) (bool, error) {
-	ok, err := ap.action.IsValid(ctx)
+func (ap *ActionPerformer[A]) checkValid() (bool, error) {
+	ok, err := ap.action.IsValid()
 	if !ok {
 		errMap, ok := err.(ErrorMap)
 		if !ok {

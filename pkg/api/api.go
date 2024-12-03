@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/bioform/go-web-app-template/pkg/action"
 	"gorm.io/gorm"
@@ -31,4 +32,7 @@ func (a *api) Transaction(ctx context.Context, lambda func(newContext context.Co
 		newAPI.db = tx
 		return lambda(newAPI.AddTo(ctx))
 	})
+}
+func (u *api) LogValue() slog.Value {
+	return slog.GroupValue()
 }

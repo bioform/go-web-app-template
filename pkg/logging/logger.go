@@ -20,12 +20,10 @@ func ChildLogger(ctx context.Context, ancestorLogger *slog.Logger) *slog.Logger 
 	traceID := ctxstore.GetTraceID(ctx)
 	user := ctxstore.GetUser(ctx)
 
-	if traceID != "" {
-		logger = logger.With(slog.String("trace_id", traceID))
-	}
-	if user != nil {
-		logger = logger.With(slog.Any("user", user))
-	}
+	logger = logger.With(
+		slog.String("trace_id", traceID),
+		slog.Any("user", user),
+	)
 
 	return logger
 }

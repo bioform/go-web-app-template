@@ -27,7 +27,7 @@ func main() {
 	})
 
 	// Perform the action.
-	ok, err := ap.Perform(ctx)
+	ok, err := ap.Perform()
 	if !ok {
 
 		var actionError action.ActionError
@@ -53,7 +53,8 @@ type MyAction struct {
 }
 
 // Implement the specific behavior for MyAction.
-func (a *MyAction) Perform(ctx context.Context) error {
+func (a *MyAction) Perform() error {
+	ctx := a.Context()
 	// Put your business logic here.
 	log := logging.Logger(ctx)
 	api, err := api.From(ctx)
@@ -80,7 +81,7 @@ func (a *MyAction) Perform(ctx context.Context) error {
 	return nil
 }
 
-func (a *MyAction) IsValid(ctx context.Context) (bool, error) {
+func (a *MyAction) IsValid() (bool, error) {
 	v := validator.New()
 	v.RequiredString(a.SomeAttr, "SomeAttr", "required")
 	return v.IsPassed(), action.ErrorMap(v.Errors())

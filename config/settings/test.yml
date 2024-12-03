@@ -1,2 +1,7 @@
 database:
   dsn: file::memory:?cache=shared
+
+email:
+  smtp:
+    host: localhost
+    port: 45939

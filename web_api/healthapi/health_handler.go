@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/bioform/go-web-app-template/pkg/database"
-	"github.com/wneessen/go-mail"
+	"github.com/bioform/go-web-app-template/pkg/mail"
 )
 
 type HealthOutput struct {
@@ -38,21 +38,11 @@ func HealthHandler(ctx context.Context, _ *struct{}) (*HealthOutput, error) {
 				smtpHealth := map[string]string{
 					"status": "down",
 				}
-				client, err := mail.NewClient("localhost",
-					mail.WithPort(45939),
-					// mail.WithSMTPAuth(mail.SMTPAuthPlain), // for production environment
-					mail.WithUsername("your_email@example.com"),
-					mail.WithPassword("your_password"),
-					mail.WithTLSPolicy(mail.NoTLS), // for test environment
-					// mail.WithTLSPolicy(mail.TLSMandatory), // for production environment
-					mail.WithHELO("localhost"), // for test environment
-				)
-				if err == nil {
-					if err := client.DialAndSendWithContext(ctx); err == nil {
-						smtpHealth["status"] = "up"
-						client.Close()
-					}
+
+				if err := mail.Client().DialAndSendWithContext(ctx); err == nil {
+					smtpHealth["status"] = "up"
 				}
+
 				return smtpHealth, nil
 			},
 		},

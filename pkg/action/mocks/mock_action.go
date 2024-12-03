@@ -70,9 +70,9 @@ func (_c *Action_Context_Call) RunAndReturn(run func() context.Context) *Action_
 	return _c
 }
 
-// IsAllowed provides a mock function with given fields: _a0
-func (_m *Action) IsAllowed(_a0 context.Context) (bool, error) {
-	ret := _m.Called(_a0)
+// IsAllowed provides a mock function with given fields:
+func (_m *Action) IsAllowed() (bool, error) {
+	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for IsAllowed")
@@ -80,17 +80,17 @@ func (_m *Action) IsAllowed(_a0 context.Context) (bool, error) {
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
-		return rf(_a0)
+	if rf, ok := ret.Get(0).(func() (bool, error)); ok {
+		return rf()
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -104,14 +104,13 @@ type Action_IsAllowed_Call struct {
 }
 
 // IsAllowed is a helper method to define mock.On call
-//   - _a0 context.Context
-func (_e *Action_Expecter) IsAllowed(_a0 interface{}) *Action_IsAllowed_Call {
-	return &Action_IsAllowed_Call{Call: _e.mock.On("IsAllowed", _a0)}
+func (_e *Action_Expecter) IsAllowed() *Action_IsAllowed_Call {
+	return &Action_IsAllowed_Call{Call: _e.mock.On("IsAllowed")}
 }
 
-func (_c *Action_IsAllowed_Call) Run(run func(_a0 context.Context)) *Action_IsAllowed_Call {
+func (_c *Action_IsAllowed_Call) Run(run func()) *Action_IsAllowed_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run()
 	})
 	return _c
 }
@@ -121,14 +120,14 @@ func (_c *Action_IsAllowed_Call) Return(_a0 bool, _a1 error) *Action_IsAllowed_C
 	return _c
 }
 
-func (_c *Action_IsAllowed_Call) RunAndReturn(run func(context.Context) (bool, error)) *Action_IsAllowed_Call {
+func (_c *Action_IsAllowed_Call) RunAndReturn(run func() (bool, error)) *Action_IsAllowed_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// IsEnabled provides a mock function with given fields: _a0
-func (_m *Action) IsEnabled(_a0 context.Context) (bool, error) {
-	ret := _m.Called(_a0)
+// IsEnabled provides a mock function with given fields:
+func (_m *Action) IsEnabled() (bool, error) {
+	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for IsEnabled")
@@ -136,17 +135,17 @@ func (_m *Action) IsEnabled(_a0 context.Context) (bool, error) {
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
-		return rf(_a0)
+	if rf, ok := ret.Get(0).(func() (bool, error)); ok {
+		return rf()
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -160,14 +159,13 @@ type Action_IsEnabled_Call struct {
 }
 
 // IsEnabled is a helper method to define mock.On call
-//   - _a0 context.Context
-func (_e *Action_Expecter) IsEnabled(_a0 interface{}) *Action_IsEnabled_Call {
-	return &Action_IsEnabled_Call{Call: _e.mock.On("IsEnabled", _a0)}
+func (_e *Action_Expecter) IsEnabled() *Action_IsEnabled_Call {
+	return &Action_IsEnabled_Call{Call: _e.mock.On("IsEnabled")}
 }
 
-func (_c *Action_IsEnabled_Call) Run(run func(_a0 context.Context)) *Action_IsEnabled_Call {
+func (_c *Action_IsEnabled_Call) Run(run func()) *Action_IsEnabled_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run()
 	})
 	return _c
 }
@@ -177,14 +175,14 @@ func (_c *Action_IsEnabled_Call) Return(_a0 bool, _a1 error) *Action_IsEnabled_C
 	return _c
 }
 
-func (_c *Action_IsEnabled_Call) RunAndReturn(run func(context.Context) (bool, error)) *Action_IsEnabled_Call {
+func (_c *Action_IsEnabled_Call) RunAndReturn(run func() (bool, error)) *Action_IsEnabled_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// IsValid provides a mock function with given fields: _a0
-func (_m *Action) IsValid(_a0 context.Context) (bool, error) {
-	ret := _m.Called(_a0)
+// IsValid provides a mock function with given fields:
+func (_m *Action) IsValid() (bool, error) {
+	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for IsValid")
@@ -192,17 +190,17 @@ func (_m *Action) IsValid(_a0 context.Context) (bool, error) {
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
-		return rf(_a0)
+	if rf, ok := ret.Get(0).(func() (bool, error)); ok {
+		return rf()
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -216,14 +214,13 @@ type Action_IsValid_Call struct {
 }
 
 // IsValid is a helper method to define mock.On call
-//   - _a0 context.Context
-func (_e *Action_Expecter) IsValid(_a0 interface{}) *Action_IsValid_Call {
-	return &Action_IsValid_Call{Call: _e.mock.On("IsValid", _a0)}
+func (_e *Action_Expecter) IsValid() *Action_IsValid_Call {
+	return &Action_IsValid_Call{Call: _e.mock.On("IsValid")}
 }
 
-func (_c *Action_IsValid_Call) Run(run func(_a0 context.Context)) *Action_IsValid_Call {
+func (_c *Action_IsValid_Call) Run(run func()) *Action_IsValid_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run()
 	})
 	return _c
 }
@@ -233,22 +230,22 @@ func (_c *Action_IsValid_Call) Return(_a0 bool, _a1 error) *Action_IsValid_Call 
 	return _c
 }
 
-func (_c *Action_IsValid_Call) RunAndReturn(run func(context.Context) (bool, error)) *Action_IsValid_Call {
+func (_c *Action_IsValid_Call) RunAndReturn(run func() (bool, error)) *Action_IsValid_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Perform provides a mock function with given fields: _a0
-func (_m *Action) Perform(_a0 context.Context) error {
-	ret := _m.Called(_a0)
+// Perform provides a mock function with given fields:
+func (_m *Action) Perform() error {
+	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Perform")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func() error); ok {
+		r0 = rf()
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -262,14 +259,13 @@ type Action_Perform_Call struct {
 }
 
 // Perform is a helper method to define mock.On call
-//   - _a0 context.Context
-func (_e *Action_Expecter) Perform(_a0 interface{}) *Action_Perform_Call {
-	return &Action_Perform_Call{Call: _e.mock.On("Perform", _a0)}
+func (_e *Action_Expecter) Perform() *Action_Perform_Call {
+	return &Action_Perform_Call{Call: _e.mock.On("Perform")}
 }
 
-func (_c *Action_Perform_Call) Run(run func(_a0 context.Context)) *Action_Perform_Call {
+func (_c *Action_Perform_Call) Run(run func()) *Action_Perform_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run()
 	})
 	return _c
 }
@@ -279,7 +275,7 @@ func (_c *Action_Perform_Call) Return(_a0 error) *Action_Perform_Call {
 	return _c
 }
 
-func (_c *Action_Perform_Call) RunAndReturn(run func(context.Context) error) *Action_Perform_Call {
+func (_c *Action_Perform_Call) RunAndReturn(run func() error) *Action_Perform_Call {
 	_c.Call.Return(run)
 	return _c
 }
