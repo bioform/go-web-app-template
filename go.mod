@@ -1,6 +1,6 @@
 module github.com/bioform/go-web-app-template
 
-go 1.23.3
+go 1.23.4
 
 require (
 	github.com/lmittmann/tint v1.0.5

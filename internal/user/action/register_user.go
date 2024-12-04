@@ -9,12 +9,11 @@ import (
 	"github.com/bioform/go-web-app-template/internal/user/repository"
 	"github.com/bioform/go-web-app-template/pkg/action"
 	"github.com/bioform/go-web-app-template/pkg/api"
-	"github.com/bioform/go-web-app-template/pkg/dbaction"
 	validator "github.com/rezakhademix/govalidator/v2"
 )
 
 type RegisterUser struct {
-	dbaction.BaseAction
+	api.BaseAction
 
 	Name     string
 	Email    string

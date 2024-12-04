@@ -1,23 +1,22 @@
-package dbaction
+package api
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/bioform/go-web-app-template/pkg/action"
-	"github.com/bioform/go-web-app-template/pkg/api"
 	"gorm.io/gorm"
 )
 
 type BaseAction struct {
 	action.BaseAction
-	api api.API
+	api API
 }
 
 func (ba *BaseAction) SetContext(ctx context.Context) {
 	ba.BaseAction.SetContext(ctx)
 
-	api, err := api.From(ctx)
+	api, err := From(ctx)
 	if err != nil {
 		panic(fmt.Errorf("set api: %w", err))
 	}
@@ -29,7 +28,7 @@ func (ba *BaseAction) TransactionProvider() action.TransactionProvider {
 	return ba.api
 }
 
-func (ba BaseAction) API() api.API {
+func (ba BaseAction) API() API {
 	return ba.api
 }
 

@@ -8,8 +8,6 @@ import (
 	"github.com/bioform/go-web-app-template/pkg/action"
 	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/database"
-	_ "github.com/bioform/go-web-app-template/pkg/database" // init() in database.go
-	"github.com/bioform/go-web-app-template/pkg/dbaction"
 	validator "github.com/rezakhademix/govalidator/v2"
 	"gorm.io/gorm"
 
@@ -47,7 +45,7 @@ func main() {
 
 // Define a specific type embedding BaseAction.
 type MyAction struct {
-	dbaction.BaseAction
+	api.BaseAction
 
 	SomeAttr string
 }

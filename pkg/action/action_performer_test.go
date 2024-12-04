@@ -122,7 +122,7 @@ var _ = Describe("ActionPerformer", func() {
 			mockAction.EXPECT().IsValid().Return(true, nil)
 			mockAction.EXPECT().Perform().Return(nil)
 
-			ok, err := performer.PerformIfEnabled()
+			ok, err := performer.Try()
 			Expect(ok).To(BeTrue())
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -133,7 +133,7 @@ var _ = Describe("ActionPerformer", func() {
 			mockAction.EXPECT().IsAllowed().Return(true, nil)
 			mockAction.EXPECT().IsEnabled().Return(false, action.ErrorMap{"error": "action not enabled"})
 
-			ok, err := performer.PerformIfEnabled()
+			ok, err := performer.Try()
 			Expect(ok).To(BeFalse())
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -145,7 +145,7 @@ var _ = Describe("ActionPerformer", func() {
 			mockAction.EXPECT().IsEnabled().Return(true, nil)
 			mockAction.EXPECT().IsValid().Return(false, action.ErrorMap{"error": "action not valid"})
 
-			ok, err := performer.PerformIfEnabled()
+			ok, err := performer.Try()
 			Expect(ok).To(BeFalse())
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(&action.ValidationError{}))
@@ -159,7 +159,7 @@ var _ = Describe("ActionPerformer", func() {
 			mockAction.EXPECT().IsValid().Return(true, nil)
 			mockAction.EXPECT().Perform().Return(errors.New("perform failed"))
 
-			ok, err := performer.PerformIfEnabled()
+			ok, err := performer.Try()
 			Expect(ok).To(BeFalse())
 			Expect(err).To(HaveOccurred())
 		})
