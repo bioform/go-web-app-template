@@ -8,6 +8,7 @@ import (
 	"github.com/bioform/go-web-app-template/pkg/action"
 	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/database"
+	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
 	validator "github.com/rezakhademix/govalidator/v2"
 	"gorm.io/gorm"
 
@@ -16,12 +17,13 @@ import (
 
 func main() {
 	ctx := api.New(database.Default()).AddTo(context.Background())
+	ctx = ctxstore.AssignTraceID(ctx)
 
 	log := logging.Logger(ctx)
 
 	// Prepare the action.
 	ap := action.New(ctx, &MyAction{
-		SomeAttr: "", // Set the action-specific attribute.
+		SomeAttr: "mmmm", // Set the action-specific attribute.
 	})
 
 	// Perform the action.
@@ -55,13 +57,18 @@ func (a *MyAction) Perform() error {
 	ctx := a.Context()
 	// Put your business logic here.
 	log := logging.Logger(ctx)
+	log.Info("MyAction-specific perform logic")
+
+	a.AfterCommit(func() error {
+		log.Info("After commit 1")
+		return errors.New("after commit 1 error")
+	})
+
 	api, err := api.From(ctx)
 	if err != nil {
 		return err
 	}
 	db := api.DB()
-
-	log.Info("MyAction-specific perform logic")
 
 	user := &model.User{Name: "L1212", Email: "mmm@example.com", Password: "123456"}
 	err = db.Create(user).Error
@@ -76,6 +83,10 @@ func (a *MyAction) Perform() error {
 	db.Raw("SELECT * FROM users").Scan(&users)
 
 	log.Info("Query users", "users", users)
+	a.AfterCommit(func() error {
+		log.Info("After commit 2")
+		return nil
+	})
 	return nil
 }
 

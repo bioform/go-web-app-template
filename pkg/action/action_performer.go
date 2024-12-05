@@ -2,46 +2,39 @@ package action
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"slices"
 )
 
-type option int
-
-const (
-	SkipCache option = iota
-	SkipTransaction
-	NopIfDisabled
-)
-
 type ActionPerformer[A Action] struct {
-	action         A
-	isAllowedCach  *Cache
-	IsEnabledCache *Cache
+	action A
+
+	callbacks   []AfterCommitCallback
+	addCallback AddCallbackFunc
+
+	isAllowedCache *Cache
+	isEnabledCache *Cache
 }
 
 func New[A Action](ctx context.Context, action A) *ActionPerformer[A] {
+	ap := &ActionPerformer[A]{action: action}
+	ctx, ap.addCallback = ap.getAddCallbackFunc(ctx)
 	action.SetContext(ctx)
-
-	return &ActionPerformer[A]{
-		action: action,
-	}
+	return ap
 }
 
 func (ap *ActionPerformer[A]) Action() A {
 	return ap.action
 }
 
-// Perform action in a transaction context.
-// Returns: ok: A boolean indicating whether the action was successfully performed.
-func (ap *ActionPerformer[A]) Perform() (ok bool, err error) {
+// Perform executes the action within a transaction context.
+func (ap *ActionPerformer[A]) Perform() (bool, error) {
 	return ap.perform()
 }
 
-// Try performs the action in a transaction context, but does not return an
-// error if the action is disabled. It returns a boolean indicating whether the
-// action was successfully performed.
-// Returns: ok: A boolean indicating whether the action was successfully performed.
-func (ap *ActionPerformer[A]) Try() (ok bool, err error) {
+// Try executes the action but does not return an error if the action is disabled.
+func (ap *ActionPerformer[A]) Try() (bool, error) {
 	return ap.perform(NopIfDisabled)
 }
 
@@ -59,101 +52,84 @@ func (ap *ActionPerformer[A]) Try() (ok bool, err error) {
 // Returns:
 //   - ok: A boolean indicating whether the action was successfully performed.
 //   - err: An error if any occurred during the transaction or action execution.
-func (ap *ActionPerformer[A]) perform(opts ...option) (ok bool, err error) {
-	tp := ap.action.TransactionProvider()
-	ctx := ap.action.Context()
-
-	err = tp.Transaction(ctx, func(transactionContext context.Context) error {
-		ap.action.SetContext(transactionContext)
-		defer ap.action.SetContext(ctx)
-
-		// Check if the action is allowed and enabled.
-		if ok, err = ap.IsPerformable(opts...); !ok || err != nil {
-			return err
+func (ap *ActionPerformer[A]) perform(opts ...option) (bool, error) {
+	fn := func() (bool, error) {
+		if ok, err := ap.IsPerformable(opts...); !ok || err != nil {
+			return ok, err
 		}
-
-		if ok, err = ap.checkValid(); !ok || err != nil {
-			return err
+		if ok, err := ap.checkValid(); !ok || err != nil {
+			return ok, err
 		}
-
-		if err = ap.action.Perform(); err != nil {
-			ok = false
-			return err
+		if err := ap.action.Perform(); err != nil {
+			return false, err
 		}
+		return true, nil
+	}
+	ok, err := ap.transaction(fn)
 
-		return nil
-	})
+	if ok && err == nil {
+		if errs := ap.AfterCommit(); len(errs) > 0 {
+			return false, fmt.Errorf("after commit: %w", errors.Join(errs...))
+		}
+	}
+
+	err = ap.wrapError(err)
 
 	return ok, err
 }
 
-/*
- * The following methods are used to check if an action is allowed, enabled, or
- * performable. They cache the results of these checks to avoid redundant
- * computation.
- */
-
+// IsAllowed checks if the action is allowed and caches the result.
 func (ap *ActionPerformer[A]) IsAllowed(opts ...option) (bool, error) {
-	if !slices.Contains(opts, SkipCache) {
-		cache := ap.isAllowedCach
-		if cache != nil {
-			// Return the cached result if it exists.
-			return cache.ok, cache.err
-		}
+	o := options(opts)
+
+	if !o.SkipCache && ap.isAllowedCache != nil {
+		return ap.isAllowedCache.ok, ap.isAllowedCache.err
+	}
+	fn := func() (bool, error) {
+		ok, err := ap.checkAllowed()
+		ap.isAllowedCache = &Cache{ok: ok, err: err}
+		return ok, err
 	}
 
-	// Otherwise, check if the action is allowed.
-	ok, err := ap.checkAllowed()
-	ap.isAllowedCach = &Cache{
-		ok:  ok,
-		err: err,
+	if o.SkipTransaction {
+		return fn()
 	}
-	return ok, err
+	return ap.transaction(fn)
 }
 
+// IsEnabled checks if the action is enabled and caches the result.
 func (ap *ActionPerformer[A]) IsEnabled(opts ...option) (bool, error) {
-	if !slices.Contains(opts, SkipCache) {
-		cache := ap.IsEnabledCache
-		if cache != nil {
-			// Return the cached result if it exists.
-			return cache.ok, cache.err
-		}
-	}
+	o := options(opts)
 
-	// Otherwise, check if the action is enabled.
-	ok, err := ap.checkEnabled(opts...)
-	ap.IsEnabledCache = &Cache{
-		ok:  ok,
-		err: err,
+	if !o.SkipCache && ap.isEnabledCache != nil {
+		return ap.isEnabledCache.ok, ap.isEnabledCache.err
 	}
-	return ok, err
+	fn := func() (bool, error) {
+		ok, err := ap.checkEnabled(opts...)
+		ap.isEnabledCache = &Cache{ok: ok, err: err}
+		return ok, err
+	}
+	if o.SkipTransaction {
+		return fn()
+	}
+	return ap.transaction(fn)
 }
 
+// IsPerformable checks if the action is both allowed and enabled.
 func (ap *ActionPerformer[A]) IsPerformable(opts ...option) (bool, error) {
-	allowed, err := ap.IsAllowed(opts...)
-	if !allowed || err != nil {
+	if ok, err := ap.IsAllowed(opts...); !ok || err != nil {
 		return false, err
 	}
-
-	enabled, err := ap.IsEnabled(opts...)
-	if !enabled || err != nil {
+	if ok, err := ap.IsEnabled(opts...); !ok || err != nil {
 		return false, err
 	}
-
 	return true, nil
 }
-
-/*
- * The following methods are used to check if an action is allowed, enabled, or
- * valid. They don't use caching and perform the checks directly.
- * computation.
- */
 
 func (ap *ActionPerformer[A]) checkAllowed() (bool, error) {
 	ok, err := ap.action.IsAllowed()
 	if err != nil {
 		return false, err
-
 	}
 	if !ok {
 		return false, NewAuthorizationError(ap.action)
@@ -163,29 +139,54 @@ func (ap *ActionPerformer[A]) checkAllowed() (bool, error) {
 
 func (ap *ActionPerformer[A]) checkEnabled(opts ...option) (bool, error) {
 	ok, err := ap.action.IsEnabled()
-	if ok {
-		return true, nil
-	}
-
-	errMap, ok := err.(ErrorMap)
 	if !ok {
+		if errMap, ok := err.(ErrorMap); ok {
+			if slices.Contains(opts, NopIfDisabled) {
+				return false, nil
+			}
+			return false, NewDisabledError(ap.action, errMap)
+		}
 		return false, err
 	}
-
-	if slices.Contains(opts, NopIfDisabled) {
-		return false, nil
-	}
-	return false, NewDisabledError(ap.action, ErrorMap(errMap))
+	return true, nil
 }
 
 func (ap *ActionPerformer[A]) checkValid() (bool, error) {
 	ok, err := ap.action.IsValid()
 	if !ok {
-		errMap, ok := err.(ErrorMap)
-		if !ok {
-			return false, err
+		if errMap, ok := err.(ErrorMap); ok {
+			return false, NewValidationError(ap.action, errMap)
 		}
-		return false, NewValidationError(ap.action, errMap)
+		return false, err
 	}
 	return true, nil
+}
+
+func (ap *ActionPerformer[A]) transaction(fn func() (bool, error)) (ok bool, err error) {
+	tp := ap.action.TransactionProvider()
+	ctx := ap.action.Context()
+
+	err = tp.Transaction(ctx, func(txCtx context.Context) error {
+		ap.action.SetContext(txCtx)
+		defer ap.action.SetContext(ctx)
+
+		ok, err = fn()
+		return err
+	})
+	return ok, err
+}
+
+func (ap *ActionPerformer[A]) wrapError(err error) error {
+	if err != nil {
+		var actionErr ActionError
+		if ok := errors.As(err, &actionErr); ok {
+			var action Action = ap.action
+			if actionErr.action != action {
+				err = NewActionError(ap.action, err)
+			}
+		} else {
+			err = NewActionError(ap.action, err)
+		}
+	}
+	return err
 }

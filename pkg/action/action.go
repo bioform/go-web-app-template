@@ -13,4 +13,7 @@ type Action interface {
 	IsAllowed() (bool, error)
 	IsEnabled() (bool, error)
 	IsValid() (bool, error)
+	AfterCommitCallback() AfterCommitCallback
 }
+
+type AfterCommitCallback func(context.Context, Action) error

@@ -23,7 +23,54 @@ func (_m *Action) EXPECT() *Action_Expecter {
 	return &Action_Expecter{mock: &_m.Mock}
 }
 
-// Context provides a mock function with given fields:
+// AfterCommitCallback provides a mock function with no fields
+func (_m *Action) AfterCommitCallback() action.AfterCommitCallback {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for AfterCommitCallback")
+	}
+
+	var r0 action.AfterCommitCallback
+	if rf, ok := ret.Get(0).(func() action.AfterCommitCallback); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(action.AfterCommitCallback)
+		}
+	}
+
+	return r0
+}
+
+// Action_AfterCommitCallback_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AfterCommitCallback'
+type Action_AfterCommitCallback_Call struct {
+	*mock.Call
+}
+
+// AfterCommitCallback is a helper method to define mock.On call
+func (_e *Action_Expecter) AfterCommitCallback() *Action_AfterCommitCallback_Call {
+	return &Action_AfterCommitCallback_Call{Call: _e.mock.On("AfterCommitCallback")}
+}
+
+func (_c *Action_AfterCommitCallback_Call) Run(run func()) *Action_AfterCommitCallback_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *Action_AfterCommitCallback_Call) Return(_a0 action.AfterCommitCallback) *Action_AfterCommitCallback_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Action_AfterCommitCallback_Call) RunAndReturn(run func() action.AfterCommitCallback) *Action_AfterCommitCallback_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Context provides a mock function with no fields
 func (_m *Action) Context() context.Context {
 	ret := _m.Called()
 
@@ -70,7 +117,7 @@ func (_c *Action_Context_Call) RunAndReturn(run func() context.Context) *Action_
 	return _c
 }
 
-// IsAllowed provides a mock function with given fields:
+// IsAllowed provides a mock function with no fields
 func (_m *Action) IsAllowed() (bool, error) {
 	ret := _m.Called()
 
@@ -125,7 +172,7 @@ func (_c *Action_IsAllowed_Call) RunAndReturn(run func() (bool, error)) *Action_
 	return _c
 }
 
-// IsEnabled provides a mock function with given fields:
+// IsEnabled provides a mock function with no fields
 func (_m *Action) IsEnabled() (bool, error) {
 	ret := _m.Called()
 
@@ -180,7 +227,7 @@ func (_c *Action_IsEnabled_Call) RunAndReturn(run func() (bool, error)) *Action_
 	return _c
 }
 
-// IsValid provides a mock function with given fields:
+// IsValid provides a mock function with no fields
 func (_m *Action) IsValid() (bool, error) {
 	ret := _m.Called()
 
@@ -235,7 +282,7 @@ func (_c *Action_IsValid_Call) RunAndReturn(run func() (bool, error)) *Action_Is
 	return _c
 }
 
-// Perform provides a mock function with given fields:
+// Perform provides a mock function with no fields
 func (_m *Action) Perform() error {
 	ret := _m.Called()
 
@@ -280,7 +327,7 @@ func (_c *Action_Perform_Call) RunAndReturn(run func() error) *Action_Perform_Ca
 	return _c
 }
 
-// Performer provides a mock function with given fields:
+// Performer provides a mock function with no fields
 func (_m *Action) Performer() any {
 	ret := _m.Called()
 
@@ -356,11 +403,11 @@ func (_c *Action_SetContext_Call) Return() *Action_SetContext_Call {
 }
 
 func (_c *Action_SetContext_Call) RunAndReturn(run func(context.Context)) *Action_SetContext_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 
-// TransactionProvider provides a mock function with given fields:
+// TransactionProvider provides a mock function with no fields
 func (_m *Action) TransactionProvider() action.TransactionProvider {
 	ret := _m.Called()
 
