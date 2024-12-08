@@ -30,7 +30,7 @@ var _ = Describe("Action Errors", func() {
 			err := action.NewDisabledError(mockAction, errs)
 			Expect(err.Error()).To(Equal("not enabled: action: *mocks.Action, performer: test performer, error: map[feature:disabled]"))
 			Expect(err.ActionError.Unwrap()).To(Equal(errs))
-			Expect(err.Errors()).To(Equal(errs))
+			Expect(err.Cause()).To(Equal(errs))
 		})
 	})
 
@@ -40,7 +40,7 @@ var _ = Describe("Action Errors", func() {
 			err := action.NewValidationError(mockAction, errs)
 			Expect(err.Error()).To(Equal("validation failed: action: *mocks.Action, performer: test performer, error: map[field:invalid]"))
 			Expect(err.ActionError.Unwrap()).To(Equal(errs))
-			Expect(err.Errors()).To(Equal(errs))
+			Expect(err.Cause()).To(Equal(errs))
 		})
 	})
 })

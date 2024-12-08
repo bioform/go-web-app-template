@@ -18,27 +18,34 @@ type RegisterUser struct {
 	Name     string
 	Email    string
 	Password string
+	User     *model.User
+	repo     repository.UserRepository
 }
 
-func (a *RegisterUser) Perform(ctx context.Context) error {
-	newUser := model.User{
+// The Init method initializes the action with the provided parameters.
+func (a *RegisterUser) Init() {
+	a.User = &model.User{
 		Name:     a.Name,
 		Email:    a.Email,
 		Password: a.Password,
 	}
+}
 
-	api, err := api.From(ctx)
+// Update user repository each time the context is changed.
+// This happens when the action is created or when the action is performed.
+func (a *RegisterUser) SetContext(ctx context.Context) {
+	a.BaseAction.SetContext(ctx) // Always call the parent method to set the context
+
+	a.repo = repository.NewUserRepository(a.API().DB())
+}
+
+func (a *RegisterUser) Perform(ctx context.Context) error {
+	_, err := a.repo.Create(ctx, a.User)
 	if err != nil {
 		return err
 	}
 
-	repo := repository.NewUserRepository(api.DB())
-	_, err = repo.Create(ctx, &newUser)
-	if err != nil {
-		return err
-	}
-
-	if err = email.SendConfirmationEmail(ctx, newUser); err != nil {
+	if err = email.SendConfirmationEmail(ctx, a.User); err != nil {
 		return fmt.Errorf("send confirmation email: %w", err)
 	}
 
@@ -46,18 +53,12 @@ func (a *RegisterUser) Perform(ctx context.Context) error {
 }
 
 func (a *RegisterUser) IsValid(ctx context.Context) (bool, error) {
-	api, err := api.From(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	repo := repository.NewUserRepository(api.DB())
 
 	v := validator.New()
 	v.RequiredString(a.Name, "Name", "required")
 	v.RequiredString(a.Email, "Email", "required")
 	v.Email(a.Email, "Email", "invalid_format")
 	v.RequiredString(a.Password, "Password", "required")
-	v.CustomRule(repo.IsEmailUnique(ctx, a.Email), "Email", "already_taken")
+	v.CustomRule(a.repo.IsEmailUnique(ctx, a.Email), "Email", "already_taken")
 	return v.IsPassed(), action.ErrorMap(v.Errors())
 }

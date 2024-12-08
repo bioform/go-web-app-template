@@ -9,25 +9,34 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/bioform/go-web-app-template/pkg/action"
+	"github.com/bioform/go-web-app-template/pkg/action/dummy"
 	"github.com/bioform/go-web-app-template/pkg/action/mocks"
 )
 
 var _ = Describe("ActionPerformer", func() {
 	var (
 		ctx                     context.Context
-		performer               *action.ActionPerformer[*mocks.Action]
-		mockAction              *mocks.Action
+		performer               *action.ActionPerformer[*dummy.Action]
+		mockAction              *dummy.Action
 		mockTransactionProvider *mocks.TransactionProvider
 	)
 
 	BeforeEach(func() {
 		ctx = context.Background()
-		mockAction = mocks.NewAction(GinkgoT())
+		mockAction = dummy.NewAction(GinkgoT())
 		mockTransactionProvider = mocks.NewTransactionProvider(GinkgoT())
 
-		// Mock SetContext and TransactionProvider
+		// Mock Init and TransactionProvider
 		mockAction.EXPECT().SetContext(mock.Anything).Maybe()
+		mockAction.EXPECT().Init().Once()
 		mockAction.EXPECT().TransactionProvider().Return(mockTransactionProvider).Maybe()
+
+		// Mock ErrorHandler
+		call := mockAction.EXPECT().ErrorHandler(mock.Anything).Maybe()
+		call.Run(func(args mock.Arguments) {
+			err := args.Get(0).(error)
+			call.Return(err)
+		})
 
 		// Update the New function call to include the context
 		performer = action.New(ctx, mockAction)
@@ -114,7 +123,6 @@ var _ = Describe("ActionPerformer", func() {
 
 			It("should return error when after commit fails", func() {
 				mockAction.EXPECT().Context().Return(ctx)
-
 				mockAction.EXPECT().IsAllowed().Return(true, nil)
 				mockAction.EXPECT().IsEnabled().Return(true, nil)
 				mockAction.EXPECT().IsValid().Return(true, nil)
@@ -259,6 +267,7 @@ var _ = Describe("ActionPerformer", func() {
 
 			It("should return false when action is not enabled", func() {
 				mockAction.EXPECT().Context().Return(ctx)
+				mockAction.EXPECT().Init()
 				mockAction.EXPECT().IsAllowed().Return(true, nil)
 				mockAction.EXPECT().IsEnabled().Return(false, action.ErrorMap{"error": "action not enabled"})
 

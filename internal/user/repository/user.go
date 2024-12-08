@@ -16,6 +16,7 @@ type UserRepository interface {
 	Create(ctx context.Context, user *model.User) (uint, error)
 	FindByID(ctx context.Context, id uint) (*model.User, error)
 	FindByEmailAndPassword(ctx context.Context, email, password string) (*model.User, error)
+	IsEmailUnique(ctx context.Context, email string) bool
 }
 
 type userRepositoryImpl struct {

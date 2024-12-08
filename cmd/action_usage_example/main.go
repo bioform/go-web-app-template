@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/bioform/go-web-app-template/internal/user/model"
 	"github.com/bioform/go-web-app-template/pkg/action"
+	"github.com/bioform/go-web-app-template/pkg/action/attr"
 	"github.com/bioform/go-web-app-template/pkg/api"
 	"github.com/bioform/go-web-app-template/pkg/database"
 	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
@@ -23,7 +25,7 @@ func main() {
 
 	// Prepare the action.
 	ap := action.New(ctx, &MyAction{
-		SomeAttr: "mmmm", // Set the action-specific attribute.
+		SomeAttr: attr.Value(123), // Set the action-specific attribute.
 	})
 
 	// Perform the action.
@@ -49,7 +51,7 @@ func main() {
 type MyAction struct {
 	api.BaseAction
 
-	SomeAttr string
+	SomeAttr attr.Type[int]
 }
 
 // Implement the specific behavior for MyAction.
@@ -63,6 +65,8 @@ func (a *MyAction) Perform() error {
 		log.Info("After commit 1")
 		return errors.New("after commit 1 error")
 	})
+
+	log.Info(fmt.Sprintf("SomeAttr: %s", a.SomeAttr))
 
 	api, err := api.From(ctx)
 	if err != nil {
@@ -92,6 +96,6 @@ func (a *MyAction) Perform() error {
 
 func (a *MyAction) IsValid() (bool, error) {
 	v := validator.New()
-	v.RequiredString(a.SomeAttr, "SomeAttr", "required")
+	v.CustomRule(attr.Required(a.SomeAttr), "SomeAttr", "required")
 	return v.IsPassed(), action.ErrorMap(v.Errors())
 }

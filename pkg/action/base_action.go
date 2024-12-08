@@ -12,6 +12,12 @@ type Callback func() error
 type BaseAction struct {
 	ctx       context.Context
 	callbacks []Callback
+	performer Performer
+}
+
+func (ba *BaseAction) Init() {
+	// You can ovveride this method in your action.
+	// It may be used to set default values for your action attributes.
 }
 
 func (ba *BaseAction) SetContext(ctx context.Context) {
@@ -22,8 +28,12 @@ func (ba *BaseAction) Context() context.Context {
 	return ba.ctx
 }
 
-func (ba *BaseAction) Performer() any {
-	return nil
+func (ba *BaseAction) Performer() Performer {
+	return ba.performer
+}
+
+func (ba *BaseAction) SetPerformer(performer Performer) {
+	ba.performer = performer
 }
 
 func (ba *BaseAction) IsAllowed() (bool, error) {
@@ -44,6 +54,10 @@ func (ba *BaseAction) IsValid() (bool, error) {
 	// v := validator.New()
 	// return v.IsPassed(), v.Errors()
 	return true, nil
+}
+
+func (ba *BaseAction) ErrorHandler(err error) error {
+	return err
 }
 
 func (ba *BaseAction) AfterCommit(callbacks ...Callback) {

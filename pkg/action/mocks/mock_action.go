@@ -117,6 +117,84 @@ func (_c *Action_Context_Call) RunAndReturn(run func() context.Context) *Action_
 	return _c
 }
 
+// ErrorHandler provides a mock function with given fields: _a0
+func (_m *Action) ErrorHandler(_a0 error) error {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ErrorHandler")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(error) error); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Action_ErrorHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ErrorHandler'
+type Action_ErrorHandler_Call struct {
+	*mock.Call
+}
+
+// ErrorHandler is a helper method to define mock.On call
+//   - _a0 error
+func (_e *Action_Expecter) ErrorHandler(_a0 interface{}) *Action_ErrorHandler_Call {
+	return &Action_ErrorHandler_Call{Call: _e.mock.On("ErrorHandler", _a0)}
+}
+
+func (_c *Action_ErrorHandler_Call) Run(run func(_a0 error)) *Action_ErrorHandler_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(error))
+	})
+	return _c
+}
+
+func (_c *Action_ErrorHandler_Call) Return(_a0 error) *Action_ErrorHandler_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Action_ErrorHandler_Call) RunAndReturn(run func(error) error) *Action_ErrorHandler_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Init provides a mock function with no fields
+func (_m *Action) Init() {
+	_m.Called()
+}
+
+// Action_Init_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Init'
+type Action_Init_Call struct {
+	*mock.Call
+}
+
+// Init is a helper method to define mock.On call
+func (_e *Action_Expecter) Init() *Action_Init_Call {
+	return &Action_Init_Call{Call: _e.mock.On("Init")}
+}
+
+func (_c *Action_Init_Call) Run(run func()) *Action_Init_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *Action_Init_Call) Return() *Action_Init_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *Action_Init_Call) RunAndReturn(run func()) *Action_Init_Call {
+	_c.Run(run)
+	return _c
+}
+
 // IsAllowed provides a mock function with no fields
 func (_m *Action) IsAllowed() (bool, error) {
 	ret := _m.Called()
@@ -328,19 +406,19 @@ func (_c *Action_Perform_Call) RunAndReturn(run func() error) *Action_Perform_Ca
 }
 
 // Performer provides a mock function with no fields
-func (_m *Action) Performer() any {
+func (_m *Action) Performer() action.Performer {
 	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Performer")
 	}
 
-	var r0 any
-	if rf, ok := ret.Get(0).(func() any); ok {
+	var r0 action.Performer
+	if rf, ok := ret.Get(0).(func() action.Performer); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(any)
+			r0 = ret.Get(0).(action.Performer)
 		}
 	}
 
@@ -364,12 +442,12 @@ func (_c *Action_Performer_Call) Run(run func()) *Action_Performer_Call {
 	return _c
 }
 
-func (_c *Action_Performer_Call) Return(_a0 any) *Action_Performer_Call {
+func (_c *Action_Performer_Call) Return(_a0 action.Performer) *Action_Performer_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Action_Performer_Call) RunAndReturn(run func() any) *Action_Performer_Call {
+func (_c *Action_Performer_Call) RunAndReturn(run func() action.Performer) *Action_Performer_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -403,6 +481,39 @@ func (_c *Action_SetContext_Call) Return() *Action_SetContext_Call {
 }
 
 func (_c *Action_SetContext_Call) RunAndReturn(run func(context.Context)) *Action_SetContext_Call {
+	_c.Run(run)
+	return _c
+}
+
+// SetPerformer provides a mock function with given fields: _a0
+func (_m *Action) SetPerformer(_a0 action.Performer) {
+	_m.Called(_a0)
+}
+
+// Action_SetPerformer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetPerformer'
+type Action_SetPerformer_Call struct {
+	*mock.Call
+}
+
+// SetPerformer is a helper method to define mock.On call
+//   - _a0 action.Performer
+func (_e *Action_Expecter) SetPerformer(_a0 interface{}) *Action_SetPerformer_Call {
+	return &Action_SetPerformer_Call{Call: _e.mock.On("SetPerformer", _a0)}
+}
+
+func (_c *Action_SetPerformer_Call) Run(run func(_a0 action.Performer)) *Action_SetPerformer_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(action.Performer))
+	})
+	return _c
+}
+
+func (_c *Action_SetPerformer_Call) Return() *Action_SetPerformer_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *Action_SetPerformer_Call) RunAndReturn(run func(action.Performer)) *Action_SetPerformer_Call {
 	_c.Run(run)
 	return _c
 }

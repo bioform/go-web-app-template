@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/bioform/go-web-app-template/pkg/action"
 	"github.com/bioform/go-web-app-template/pkg/util/crypt"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,7 @@ const (
 
 type User struct {
 	gorm.Model
+	action.Performer `gorm:"-"`
 
 	Name         string
 	Email        string `gorm:"unique;not null"`

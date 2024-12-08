@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bioform/go-web-app-template/pkg/action"
+	"github.com/bioform/go-web-app-template/pkg/util/ctxstore"
 	"gorm.io/gorm"
 )
 
@@ -26,6 +27,13 @@ func (ba *BaseAction) SetContext(ctx context.Context) {
 
 func (ba *BaseAction) TransactionProvider() action.TransactionProvider {
 	return ba.api
+}
+
+func (ba *BaseAction) Performer() action.Performer {
+	if performer := ba.BaseAction.Performer(); performer == nil {
+		ba.SetPerformer(ctxstore.GetUser(ba.Context()))
+	}
+	return ba.BaseAction.Performer()
 }
 
 func (ba BaseAction) API() API {

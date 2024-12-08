@@ -1,7 +1,13 @@
 package action
 
-import "fmt"
+import (
+	"fmt"
+)
 
+type ErrorMapWrapper interface {
+	Cause() ErrorMap
+	Add(key, value string)
+}
 type ErrorMap map[string]string
 
 type ActionError struct {
@@ -19,10 +25,12 @@ type AuthorizationError struct {
 
 type DisabledError struct {
 	ActionError
+	ErrorMapWrapper
 }
 
 type ValidationError struct {
 	ActionError
+	ErrorMapWrapper
 }
 
 func (e ErrorMap) Error() string {
@@ -54,6 +62,10 @@ func NewValidationError(action Action, errs ErrorMap) *ValidationError {
 }
 
 func (e ActionError) Unwrap() error {
+	return e.error
+}
+
+func (e ActionError) Cause() error {
 	return e.error
 }
 
@@ -89,14 +101,22 @@ func (e DisabledError) Error() string {
 	return fmt.Sprintf("not enabled: %v", e.ActionError)
 }
 
+func (e DisabledError) Cause() ErrorMap {
+	return e.error.(ErrorMap)
+}
+
+func (e DisabledError) Add(key, value string) {
+	e.error.(ErrorMap)[key] = value
+}
+
 func (e ValidationError) Error() string {
 	return fmt.Sprintf("validation failed: %v", e.ActionError)
 }
 
-func (e DisabledError) Errors() ErrorMap {
+func (e ValidationError) Cause() ErrorMap {
 	return e.error.(ErrorMap)
 }
 
-func (e ValidationError) Errors() ErrorMap {
-	return e.error.(ErrorMap)
+func (e ValidationError) Add(key, value string) {
+	e.error.(ErrorMap)[key] = value
 }

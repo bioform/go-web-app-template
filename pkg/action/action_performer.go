@@ -19,8 +19,20 @@ type ActionPerformer[A Action] struct {
 
 func New[A Action](ctx context.Context, action A) *ActionPerformer[A] {
 	ap := &ActionPerformer[A]{action: action}
-	ctx, ap.addCallback = ap.getAddCallbackFunc(ctx)
-	action.SetContext(ctx)
+
+	action.SetContext(ap.setAddCallback(ctx))
+	action.Init()
+
+	return ap
+}
+
+func (ap *ActionPerformer[A]) As(performer Performer) *ActionPerformer[A] {
+	ap.action.SetPerformer(performer)
+	return ap
+}
+
+func (ap *ActionPerformer[A]) AsSystem() *ActionPerformer[A] {
+	ap.action.SetPerformer(SystemPerformer)
 	return ap
 }
 
@@ -54,7 +66,7 @@ func (ap *ActionPerformer[A]) Try() (bool, error) {
 //   - err: An error if any occurred during the transaction or action execution.
 func (ap *ActionPerformer[A]) perform(opts ...option) (bool, error) {
 	fn := func() (bool, error) {
-		if ok, err := ap.IsPerformable(opts...); !ok || err != nil {
+		if ok, err := ap.IsPerformable(append(opts, SkipTransaction)...); !ok || err != nil {
 			return ok, err
 		}
 		if ok, err := ap.checkValid(); !ok || err != nil {
@@ -69,7 +81,8 @@ func (ap *ActionPerformer[A]) perform(opts ...option) (bool, error) {
 
 	if ok && err == nil {
 		if errs := ap.AfterCommit(); len(errs) > 0 {
-			return false, fmt.Errorf("after commit: %w", errors.Join(errs...))
+			ok = false
+			err = NewActionError(ap.action, fmt.Errorf("after commit: %w", errors.Join(errs...)))
 		}
 	}
 
@@ -178,6 +191,11 @@ func (ap *ActionPerformer[A]) transaction(fn func() (bool, error)) (ok bool, err
 
 func (ap *ActionPerformer[A]) wrapError(err error) error {
 	if err != nil {
+		handledError := ap.action.ErrorHandler(err)
+		if handledError != err {
+			return handledError
+		}
+
 		var actionErr ActionError
 		if ok := errors.As(err, &actionErr); ok {
 			var action Action = ap.action

@@ -14,7 +14,7 @@ import (
 var emailTemplate embed.FS
 
 // SendConfirmationEmail sends a confirmation email to the newly registered user
-func SendConfirmationEmail(ctx context.Context, user model.User) error {
+func SendConfirmationEmail(ctx context.Context, user *model.User) error {
 	// Parse the email template
 	tmpl, err := template.ParseFS(emailTemplate, "templates/email_confirmation.html")
 	if err != nil {
